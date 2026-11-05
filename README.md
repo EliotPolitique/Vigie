@@ -40,7 +40,7 @@ Google affiche « Google n'a pas validé cette application » : c'est normal pou
 
 ### 4. Tâches automatiques — Google Apps Script (gratuit)
 1. Va sur <https://script.google.com/> → **Nouveau projet** « Vigie — tâches ».
-2. Remplace le contenu de `Code.gs` par celui du fichier `apps-script/Code.gs` de ce dépôt.
+2. Remplace le contenu de `Code.gs` par celui du fichier `apps-script/Code.gs` de ce dépôt (aussi disponible en texte brut à l'adresse `https://<ton-site>.pages.dev/taches.txt`).
 3. Sélectionne la fonction **installer** → **Exécuter** → accepte les autorisations.
 
 Tu recevras par e-mail le bilan du mois (le 1er) et les alertes de cours ; une sauvegarde datée est faite chaque dimanche dans « Vigie — sauvegardes ».

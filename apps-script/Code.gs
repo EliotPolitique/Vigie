@@ -3,7 +3,7 @@
  * Lit la copie de tes données que Vigie synchronise dans ton Drive (« vigie-donnees.json.gz ») et :
  *  - le 1er de chaque mois : t'envoie par e-mail le bilan du mois écoulé ;
  *  - chaque dimanche : garde une copie datée de tes données (8 dernières) dans « Vigie — sauvegardes » ;
- *  - les jours ouvrés vers 18 h 30 : vérifie tes alertes de cours et les mouvements de ±5 % (cours lus dans ta feuille de cours).
+ *  - les jours ouvrés vers 18 h : vérifie tes alertes de cours et les mouvements de ±5 % (cours lus dans ta feuille de cours).
  * Installation : coller ce fichier dans un projet Apps Script, exécuter une fois installer(), accepter les autorisations.
  * Rien n'est modifié dans Vigie : ce script ne fait que lire tes données et t'écrire.
  */
@@ -81,20 +81,33 @@ function alertesCours() {
   const wd = new Date().getDay(); if (wd === 0 || wd === 6) return;
   const D = donnees_(); const id = D.settings.gsheet; if (!id) return;
   const vals = SpreadsheetApp.openById(id).getSheets()[0].getDataRange().getValues();
-  const h = vals[0].map(x => String(x).toLowerCase().replace(/[^a-z]/g, '')); const ix = k => h.indexOf(k);
-  const rows = vals.slice(1).map(r => ({ key: String(r[ix('key')] || '').toUpperCase(), isin: String(r[ix('isin')] || '').toUpperCase(), gsym: String(r[ix('gsym')] || '').toUpperCase(), price: +r[ix('price')], chg: ix('changepct') > -1 ? +r[ix('changepct')] : NaN }));
-  const find = x => rows.find(r => (x.gsym && r.gsym === String(x.gsym).toUpperCase()) || (x.isin && r.isin === String(x.isin).toUpperCase()) || (x.ticker && r.key === String(x.ticker).toUpperCase()));
+  /* en-têtes au format Vigie (key, isin, gsym, price, changepct) ou « Moteur de cotations » (ISIN, Code Google, Prix coté…) */
+  const h = vals[0].map(x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+  const ix = (...k) => { for (const x of k) { const i = h.indexOf(x); if (i > -1) return i; } return -1; };
+  const iK = ix('key', 'symbole', 'ticker'), iI = ix('isin'), iG = ix('gsym', 'codegoogle'), iP = ix('price', 'prixcote', 'prix', 'cours'), iX = ix('changepct', 'variation', 'variationpct');
+  if (iP < 0) return;
+  const cell = (r, i) => i > -1 ? String(r[i] || '').trim().toUpperCase() : '';
+  const num = v => typeof v === 'number' ? v : +String(v).replace(/\s/g, '').replace(',', '.');
+  const rows = vals.slice(1).map(r => ({ key: cell(r, iK), isin: cell(r, iI), gsym: cell(r, iG), price: num(r[iP]), chg: iX > -1 ? num(r[iX]) : NaN })).filter(r => (r.key || r.isin || r.gsym) && r.price > 0);
+  const find = x => rows.find(r => (x.gsym && r.gsym === String(x.gsym).toUpperCase()) || (x.isin && r.isin === String(x.isin).toUpperCase()) || (x.ticker && (r.key === String(x.ticker).toUpperCase() || r.gsym.split(':').pop() === String(x.ticker).toUpperCase())));
   const props = PropertiesService.getUserProperties(); const today = Utilities.formatDate(new Date(), 'Europe/Paris', 'yyyy-MM-dd'); const sent = JSON.parse(props.getProperty('sent') || '{}');
-  const out = [];
   const held = []; D.accounts.forEach(a => (a.holdings || []).forEach(x => { if (+x.qty > 0 && x.kind !== 'fe') held.push(x); }));
+  /* sans colonne de variation : variation calculée par rapport au dernier cours relevé un jour précédent (lignes détenues uniquement, la mémoire du script est limitée) */
+  const last = JSON.parse(props.getProperty('last') || '{}'), last2 = {};
+  held.forEach(x => { const r = find(x); if (!r) return; const k = r.gsym || r.isin || r.key; const L = last[k];
+    if (!isFinite(r.chg) && L && L.d < today && L.p > 0) r.chg = (r.price - L.p) / L.p * 100;
+    last2[k] = (!L || L.d < today) ? { d: today, p: r.price } : L; });
+  Object.keys(sent).forEach(k => { if (sent[k] !== today) delete sent[k]; });
+  const OPS = { above: 'au-dessus de', below: 'en dessous de', chgUp: 'hausse du jour ≥ %', chgDown: 'baisse du jour ≥ %' };
+  const out = [];
   (D.settings.alerts || []).filter(al => al.on !== false).forEach(al => {
     const x = held.find(y => [y.isin, y.ticker, y.name].map(v => String(v || '').toUpperCase()).includes(String(al.key).toUpperCase())) || { isin: al.key, ticker: al.key };
     const q = find(x); if (!q || !(q.price > 0)) return; const c = q.chg;
     const ok = al.op === 'above' ? q.price >= al.val : al.op === 'below' ? q.price <= al.val : al.op === 'chgUp' ? c >= al.val : al.op === 'chgDown' ? c <= -Math.abs(al.val) : false;
-    const k = 'al:' + al.id; if (ok && sent[k] !== today) { sent[k] = today; out.push((al.name || al.key) + ' : ' + q.price + ' — alerte « ' + al.op + ' ' + al.val + ' » atteinte'); }
+    const k = 'al:' + al.id; if (ok && sent[k] !== today) { sent[k] = today; out.push((al.name || al.key) + ' : ' + q.price + ' — alerte « ' + (OPS[al.op] || al.op).replace('%', al.val + ' %').replace(/de$/, 'de ' + al.val) + ' » atteinte'); }
   });
   held.forEach(x => { const q = find(x); if (!q || !isFinite(q.chg) || Math.abs(q.chg) < MOVE_PCT) return; const k = 'mv:' + (x.isin || x.name); if (sent[k] === today) return; sent[k] = today;
     out.push(x.name + ' : ' + (q.chg > 0 ? '+' : '') + q.chg.toFixed(1).replace('.', ',') + ' % aujourd’hui (ligne ≈ ' + eur(x.qty * q.price) + ')'); });
-  props.setProperty('sent', JSON.stringify(sent));
+  props.setProperty('sent', JSON.stringify(sent)); props.setProperty('last', JSON.stringify(last2));
   if (out.length) MailApp.sendEmail(moi_(), 'Vigie — alertes de cours', out.join('\n'));
 }

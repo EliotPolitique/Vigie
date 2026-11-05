@@ -55,7 +55,7 @@ function bilanMensuel() {
   const top = Object.keys(cats).sort((a, b) => cats[b] - cats[a]).slice(0, 3).map(k => k + ' ' + eur(cats[k]));
   const div = D.iops.filter(o => ym(o.d) === M && (o.t === 'div' || o.t === 'int')).reduce((s, o) => s + net(o), 0) + D.txs.filter(x => ym(x.d) === M && x.c === 'investIncome' && x.a > 0).reduce((s, x) => s + x.a, 0);
   const unc = D.txs.filter(x => ym(x.d) === M && (!x.c || x.c === 'uncat')).length;
-  const mois = Utilities.formatDate(prev, 'Europe/Paris', 'MMMM yyyy');
+  const mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'][prev.getMonth()] + ' ' + prev.getFullYear();
   const lignes = [
     'Bilan de ' + mois,
     'Patrimoine net : ' + (n1 == null ? 'inconnu' : eur(n1)) + (n1 != null && n0 != null ? ' (' + (n1 - n0 >= 0 ? '+' : '') + eur(n1 - n0) + (n0 ? ', ' + ((n1 - n0) / Math.abs(n0) * 100).toFixed(1).replace('.', ',') + ' %' : '') + ')' : ''),

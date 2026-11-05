@@ -987,7 +987,8 @@ input,select,textarea{border-radius:7px}
 const CFG_KEY='vigie:cfg';
 const SA={cfg:{},token:null,tokenExp:0,tokenClient:null,gisReady:false,listeners:new Set(),sync:{st:'off',at:null,err:null,remoteAt:null,busy:false,dirty:false,conflict:null}};
 window.VSA=SA;
-function loadCfg(){try{SA.cfg=JSON.parse(localStorage.getItem(CFG_KEY)||'{}')||{}}catch(e){SA.cfg={}}}
+const DEF_CLIENT='927055725455-bher9fc669ov8ngibbh8cer9nj02orr3.apps.googleusercontent.com';/* identifiant public (pas un secret) du projet Google Cloud « Vigie » */
+function loadCfg(){try{SA.cfg=JSON.parse(localStorage.getItem(CFG_KEY)||'{}')||{}}catch(e){SA.cfg={}}if(!SA.cfg.gClientId&&/\.pages\.dev$/.test(location.hostname))SA.cfg.gClientId=DEF_CLIENT}
 SA.saveCfg=function(patch){Object.assign(SA.cfg,patch||{});try{localStorage.setItem(CFG_KEY,JSON.stringify(SA.cfg))}catch(e){}SA.emit()};
 SA.emit=function(){SA.listeners.forEach(f=>{try{f()}catch(e){}})};
 loadCfg();

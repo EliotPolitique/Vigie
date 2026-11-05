@@ -67,3 +67,17 @@ finChip=function(){if(S.demo||!S.data)return '';const ok=VSA.googleOk(),linked=V
   if(ok)return `<button class="finchip" data-a="go" data-v="prefs" title="${esc(st('ok'))}"><i class="dot" style="background:var(--good)"></i><span class="hide-m">Google</span></button>`;
   return `<button class="finchip" data-a="saGIn" title="${esc(st(linked?'recon':'con'))}"><i class="dot" style="background:var(--warn)"></i><span class="hide-m">${esc(st(linked?'recon':'con'))}</span></button>`};
 {const _hp=homeParts;homeParts=function(){const P=_hp();P.finBand='';return P}}
+/* iPhone : invitation à installer Vigie sur l'écran d'accueil (Safari → Partager → Sur l'écran d'accueil) */
+const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const IOS_APP=IOS&&(navigator.standalone===true||matchMedia('(display-mode: standalone)').matches);
+SAT.fr.iosT='Installe Vigie sur ton iPhone';SAT.fr.iosP='Dans Safari : bouton Partager, puis « Sur l\'écran d\'accueil ». Vigie s\'ouvrira en plein écran, comme une application.';SAT.fr.iosOk='Compris';
+SAT.fr.iosSync='Sur l\'iPhone, l\'application installée a son propre espace : connecte Google puis « Récupérer depuis le Drive » pour retrouver tes données.';
+SAT.en.iosT='Install Vigie on your iPhone';SAT.en.iosP='In Safari: Share button, then “Add to Home Screen”. Vigie will open full screen, like an app.';SAT.en.iosOk='Got it';
+SAT.en.iosSync='On iPhone the installed app has its own storage: connect Google then “Download from Drive” to get your data.';
+{const _hp2=homeParts;homeParts=function(){const P=_hp2();let ios='';try{
+  if(IOS&&!IOS_APP&&localStorage.getItem('vigie:iosTip')!=='1')ios=`<div class="demo-band" style="margin-bottom:16px">${ico('download')}<div><b>${esc(st('iosT'))}</b> ${esc(st('iosP'))}</div><button class="btn sm" data-a="saIosOk">${esc(st('iosOk'))}</button></div>`;
+  else if(IOS_APP&&!VSA.cfg.syncRemoteAt&&localStorage.getItem('vigie:iosTip2')!=='1')ios=`<div class="demo-band" style="margin-bottom:16px">${ico('refresh')}<div>${esc(st('iosSync'))}</div><button class="btn sm" data-a="saIosOk2">${esc(st('iosOk'))}</button></div>`}catch(e){}
+  P.finBand=ios+P.finBand;return P}}
+EXT.A.saIosOk=()=>{try{localStorage.setItem('vigie:iosTip','1')}catch(e){}render()};
+EXT.A.saIosOk2=()=>{try{localStorage.setItem('vigie:iosTip2','1')}catch(e){}render()};
+Object.assign(A,{saIosOk:EXT.A.saIosOk,saIosOk2:EXT.A.saIosOk2});

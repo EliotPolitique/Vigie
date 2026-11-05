@@ -41,6 +41,7 @@ const dbApi={
 /* ---------------- Google : autorisation ---------------- */
 const G_SCOPES='https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets';
 function loadGis(){if(SA.gisP)return SA.gisP;SA.gisP=new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=()=>{SA.gisReady=true;res()};s.onerror=()=>rej(new Error('gis'));document.head.appendChild(s)});return SA.gisP}
+SA.loadGis=loadGis;
 SA.googleConnect=async function(silent){if(!SA.cfg.gClientId)throw {code:'no_client_id'};await loadGis();
   return new Promise((res,rej)=>{SA.tokenClient=google.accounts.oauth2.initTokenClient({client_id:SA.cfg.gClientId,scope:G_SCOPES,prompt:silent?'':undefined,
     callback:r=>{if(r&&r.access_token){SA.token=r.access_token;SA.tokenExp=Date.now()+((+r.expires_in||3600)-120)*1000;SA.saveCfg({gLinked:true});SA.emit();res(SA.token)}else rej({code:'not_granted',message:r&&r.error})},

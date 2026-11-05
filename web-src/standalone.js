@@ -12,7 +12,7 @@ const SAT={fr:{
   key:'Clé API Anthropic',keyH:'Commence par « sk-ant- ». Elle reste dans ce navigateur seulement.',save:'Enregistrer',rm:'Retirer',keyOk:'Clé enregistrée : rechargement…',
   band:'Reconnecte ton compte Google pour synchroniser et lire tes feuilles.',bandBtn:'Reconnecter',
   wipe:'Effacer les données de ce navigateur',wipeS:'Ton Drive n\'est pas touché.',wipeC:'Confirmer l\'effacement',
-  needId:'Renseigne d\'abord l\'identifiant client OAuth.'},
+  needId:'Renseigne d\'abord l\'identifiant client OAuth.',gisFail:'Impossible de charger la connexion Google (bloqueur de publicités ou de traqueurs ?). Autorise accounts.google.com pour ce site puis réessaie.'},
  en:{h:'Standalone version',s:'Vigie runs without Claude: your data stays in this browser and, if you link it, in your Google Drive.',
   g:'Google account',gS:'To read and write your sheets and drop folder and sync your data across devices.',cid:'OAuth client ID (Google Cloud)',cidH:'Ends with “.apps.googleusercontent.com” — see the setup guide.',
   con:'Connect Google',recon:'Reconnect Google',dis:'Disconnect',ok:'Connected',off:'Not connected',exp:'Session expired',sy:'Drive sync',syS:'File “vigie-donnees.json.gz” in the “Vigie” folder of your Drive.',on1:'On',off1:'Off',
@@ -41,7 +41,7 @@ function saPrefs(){const C=VSA.cfg,ok=VSA.googleOk(),Y=VSA.sync;
   </section>`}
 {const _pvS=prefsView;prefsView=function(){const h=_pvS();const i=h.indexOf('<div class="grid g2"');if(i<0)return saPrefs()+h;const j=h.indexOf('>',i)+1;return h.slice(0,j)+saPrefs()+h.slice(j)}}
 EXT.A.saCid=()=>{const v=(document.getElementById('sa-cid')||{}).value||'';VSA.saveCfg({gClientId:v.trim()});toast(st('save'))};
-EXT.A.saGIn=async()=>{if(!VSA.cfg.gClientId){toast(st('needId'),true);return}try{await VSA.googleConnect(false);await saAfterConnect()}catch(e){toast(st('err',{e:e&&(e.message||e.code)||'?'}),true)}};
+EXT.A.saGIn=async()=>{if(!VSA.cfg.gClientId){toast(st('needId'),true);return}try{await VSA.googleConnect(false);await saAfterConnect()}catch(e){const m=e&&(e.message||e.code)||'?';toast(m==='gis'?st('gisFail'):st('err',{e:m}),true)}};
 EXT.A.saGOut=()=>{VSA.googleSignOut()};
 EXT.A.saSync=v=>{VSA.saveCfg({sync:v==='1'})};
 EXT.A.saPush=async v=>{await flush();await VSA.push(v==='force');if(!VSA.sync.err)toast(st('pushed'))};
@@ -58,3 +58,7 @@ async function saAfterConnect(){if(VSA.cfg.sync===false){render();try{if(typeof 
 {const _wiS=watchItems;watchItems=function(){const L=_wiS();try{if(VSA.cfg.gLinked&&!VSA.googleOk())L.unshift({lvl:'info',ic:'refresh',l:st('band'),s:'',act:'saGIn',v:'',prio:9})}catch(e){}return L}}
 /* les fonctions propres à Claude (Finary, Finvygo) sont masquées dans la version autonome */
 {const _gp=prefsView;prefsView=function(){let h=_gp();try{const k=esc(t('fin.prefT'));const i=h.indexOf(`<h2>${k}</h2>`);if(i>-1){const s0=h.lastIndexOf('<section class="card">',i);const e=h.indexOf('</section>',i)+10;if(s0>-1&&e>9)h=h.slice(0,s0)+h.slice(e)}}catch(e){}return h}}
+/* les boutons de la version autonome rejoignent la table des actions (fusionnée au démarrage, avant ce bloc) */
+Object.assign(A,{saCid:EXT.A.saCid,saGIn:EXT.A.saGIn,saGOut:EXT.A.saGOut,saSync:EXT.A.saSync,saPush:EXT.A.saPush,saPull:EXT.A.saPull,saKey:EXT.A.saKey,saKeyRm:EXT.A.saKeyRm,saWipe:EXT.A.saWipe});
+/* la bibliothèque Google est chargée dès l'ouverture, pour que la fenêtre de connexion s'ouvre au clic sans être bloquée */
+setTimeout(()=>{if(VSA.cfg.gClientId&&VSA.loadGis)VSA.loadGis().catch(()=>{})},1500);

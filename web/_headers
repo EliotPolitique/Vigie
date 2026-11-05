@@ -3,3 +3,7 @@
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/taches.txt
+  Access-Control-Allow-Origin: https://script.google.com
+  Content-Type: text/plain; charset=utf-8

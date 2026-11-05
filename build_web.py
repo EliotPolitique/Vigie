@@ -15,5 +15,6 @@ html=('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="vi
  '<script>\n'+shim+'\n</script>\n<script>\n'+js+'\n'+sa+'\n</script>\n</body></html>\n')
 out=R/'web';out.mkdir(exist_ok=True)
 (out/'index.html').write_text(html)
+shutil.copy(R/'apps-script'/'Code.gs',out/'taches.txt')
 for f in ['manifest.webmanifest','sw.js','icon.svg','icon-maskable.svg','icon-180.png','icon-192.png','icon-512.png','_headers']:shutil.copy(R/'web-src'/f,out/f)
 print(len(html))

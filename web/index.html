@@ -41012,9 +41012,11 @@ function gsText(res){let p=res&&res.payload;if(typeof p==='string'){try{p=JSON.p
   if(!b64||typeof b64!=='string')return null;try{const bin=atob(b64.replace(/\s/g,''));return new TextDecoder('utf-8').decode(Uint8Array.from(bin,c=>c.charCodeAt(0)))}catch(e){return null}}
 function gsParse(text){
   const rows=parseCSVText(String(text).replace(/^﻿/,''),',');if(rows.length<2)return null;
-  const h=rows[0].map(x=>norm(x));const ix=k=>h.indexOf(k);const iK=ix('key'),iI=ix('isin'),iG=ix('gsym'),iC=ix('cur'),iP=ix('price'),iX=ix('changepct'),iT=ix('tradetime');
+  const h=rows[0].map(x=>norm(x).replace(/[^a-z0-9]/g,''));const ix=(...k)=>{for(const x of k){const i=h.indexOf(x);if(i>-1)return i}return -1};
+  /* format Vigie (key, isin, gsym, cur, price…) ou « Moteur de cotations » (ISIN, Code Google, Devise cotée, Prix coté, Date du cours) */
+  const iK=ix('key','symbole','ticker'),iI=ix('isin'),iG=ix('gsym','codegoogle'),iC=ix('cur','devisecotee','devise'),iP=ix('price','prixcote','prix','cours'),iX=ix('changepct','variation','variationpct'),iT=ix('tradetime','datducours','dateducours','date');
   if(iP<0)return null;
-  const tt=v=>{const s=String(v||'').trim();const d=parseDate(s);const m=s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);return d?d+'T'+(m?pad(+m[1])+':'+m[2]+':'+(m[3]||'00'):'12:00:00'):null};
+  const tt=v=>{const s=String(v||'').trim();const nx=+s.replace(",",".");if(/^\d{5}([.,]\d+)?$/.test(s)&&nx>30000&&nx<80000){const ms=Math.round((nx-25569)*86400000);return new Date(ms).toISOString().slice(0,19)}const d=parseDate(s);const m=s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);return d?d+'T'+(m?pad(+m[1])+':'+m[2]+':'+(m[3]||'00'):'12:00:00'):null};
   return rows.slice(1).map(r=>({key:String(r[iK]??'').trim().toUpperCase(),isin:String(r[iI]??'').trim().toUpperCase(),gsym:String(r[iG]??'').trim().toUpperCase(),cur:String(r[iC]??'').trim().toUpperCase(),price:parseAmount(r[iP]),chg:iX>-1?parseAmount(r[iX]):NaN,at:iT>-1?tt(r[iT]):null,err:/#N\/A|#ERROR|#REF|#VALUE|#NAME/i.test(String(r[iP]))})).filter(x=>x.key||x.isin||x.gsym);
 }
 function gsMatch(h,rows){

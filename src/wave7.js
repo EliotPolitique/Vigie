@@ -15,7 +15,7 @@ function w7P(res){let p=res&&res.payload;if(typeof p==='string'){try{p=JSON.pars
 /* ================= 9. journal d'erreurs et mode sans échec ================= */
 const W7_BOOT='vigie:boot';
 {let n=0;try{n=+(localStorage.getItem(W7_BOOT)||0)||0;localStorage.setItem(W7_BOOT,String(n+1))}catch(e){}W7.safe=n>=2}
-function w7Log(e,where){try{const m=String(e&&(e.message||e.reason&&e.reason.message||e.reason)||e||'').slice(0,300);if(!m||/ResizeObserver|Script error/.test(m))return;
+function w7Log(e,where){try{if(e&&(e.code==='needs_reauth'||e.code==='not_granted'))return;const m=String(e&&(e.message||e.reason&&e.reason.message||e.reason)||e||'').slice(0,300);if(!m||/ResizeObserver|Script error/.test(m))return;
   const row={at:new Date().toISOString(),w:String(where||'').slice(0,30),m,v:(S.ui&&S.ui.view)||'',ver:typeof APP==='object'?(APP.ver||''):''};
   if(W7.errs.length&&W7.errs[W7.errs.length-1].m===m)return;W7.errs.push(row);if(W7.errs.length>50)W7.errs.shift();clearTimeout(W7.errT);W7.errT=setTimeout(w7ErrFlush,5000)}catch(x){}}
 async function w7ErrFlush(){if(STORE.mode!=='cloud'||!STORE.db||S.demo)return;try{const ref=STORE.db.doc(P('errlog'));let rows=[];try{const s=await ref.get();if(s.exists)rows=(s.data()||{}).rows||[]}catch(e){}

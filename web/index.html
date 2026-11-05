@@ -44982,7 +44982,7 @@ function w7P(res){let p=res&&res.payload;if(typeof p==='string'){try{p=JSON.pars
 /* ================= 9. journal d'erreurs et mode sans échec ================= */
 const W7_BOOT='vigie:boot';
 {let n=0;try{n=+(localStorage.getItem(W7_BOOT)||0)||0;localStorage.setItem(W7_BOOT,String(n+1))}catch(e){}W7.safe=n>=2}
-function w7Log(e,where){try{const m=String(e&&(e.message||e.reason&&e.reason.message||e.reason)||e||'').slice(0,300);if(!m||/ResizeObserver|Script error/.test(m))return;
+function w7Log(e,where){try{if(e&&(e.code==='needs_reauth'||e.code==='not_granted'))return;const m=String(e&&(e.message||e.reason&&e.reason.message||e.reason)||e||'').slice(0,300);if(!m||/ResizeObserver|Script error/.test(m))return;
   const row={at:new Date().toISOString(),w:String(where||'').slice(0,30),m,v:(S.ui&&S.ui.view)||'',ver:typeof APP==='object'?(APP.ver||''):''};
   if(W7.errs.length&&W7.errs[W7.errs.length-1].m===m)return;W7.errs.push(row);if(W7.errs.length>50)W7.errs.shift();clearTimeout(W7.errT);W7.errT=setTimeout(w7ErrFlush,5000)}catch(x){}}
 async function w7ErrFlush(){if(STORE.mode!=='cloud'||!STORE.db||S.demo)return;try{const ref=STORE.db.doc(P('errlog'));let rows=[];try{const s=await ref.get();if(s.exists)rows=(s.data()||{}).rows||[]}catch(e){}
@@ -45932,6 +45932,11 @@ async function saAfterConnect(){if(VSA.cfg.sync===false){render();try{if(typeof 
 Object.assign(A,{saCid:EXT.A.saCid,saGIn:EXT.A.saGIn,saGOut:EXT.A.saGOut,saSync:EXT.A.saSync,saPush:EXT.A.saPush,saPull:EXT.A.saPull,saKey:EXT.A.saKey,saKeyRm:EXT.A.saKeyRm,saWipe:EXT.A.saWipe});
 /* la bibliothèque Google est chargée dès l'ouverture, pour que la fenêtre de connexion s'ouvre au clic sans être bloquée */
 setTimeout(()=>{if(VSA.cfg.gClientId&&VSA.loadGis)VSA.loadGis().catch(()=>{})},1500);
+/* Finary n'existe pas hors de Claude : pastille et bandeau d'invitation remplacés par l'état de la connexion Google */
+finChip=function(){if(S.demo||!S.data)return '';const ok=VSA.googleOk(),linked=VSA.cfg.gLinked;
+  if(ok)return `<button class="finchip" data-a="go" data-v="prefs" title="${esc(st('ok'))}"><i class="dot" style="background:var(--good)"></i><span class="hide-m">Google</span></button>`;
+  return `<button class="finchip" data-a="saGIn" title="${esc(st(linked?'recon':'con'))}"><i class="dot" style="background:var(--warn)"></i><span class="hide-m">${esc(st(linked?'recon':'con'))}</span></button>`};
+{const _hp=homeParts;homeParts=function(){const P=_hp();P.finBand='';return P}}
 
 </script>
 </body></html>

@@ -62,3 +62,8 @@ async function saAfterConnect(){if(VSA.cfg.sync===false){render();try{if(typeof 
 Object.assign(A,{saCid:EXT.A.saCid,saGIn:EXT.A.saGIn,saGOut:EXT.A.saGOut,saSync:EXT.A.saSync,saPush:EXT.A.saPush,saPull:EXT.A.saPull,saKey:EXT.A.saKey,saKeyRm:EXT.A.saKeyRm,saWipe:EXT.A.saWipe});
 /* la bibliothèque Google est chargée dès l'ouverture, pour que la fenêtre de connexion s'ouvre au clic sans être bloquée */
 setTimeout(()=>{if(VSA.cfg.gClientId&&VSA.loadGis)VSA.loadGis().catch(()=>{})},1500);
+/* Finary n'existe pas hors de Claude : pastille et bandeau d'invitation remplacés par l'état de la connexion Google */
+finChip=function(){if(S.demo||!S.data)return '';const ok=VSA.googleOk(),linked=VSA.cfg.gLinked;
+  if(ok)return `<button class="finchip" data-a="go" data-v="prefs" title="${esc(st('ok'))}"><i class="dot" style="background:var(--good)"></i><span class="hide-m">Google</span></button>`;
+  return `<button class="finchip" data-a="saGIn" title="${esc(st(linked?'recon':'con'))}"><i class="dot" style="background:var(--warn)"></i><span class="hide-m">${esc(st(linked?'recon':'con'))}</span></button>`};
+{const _hp=homeParts;homeParts=function(){const P=_hp();P.finBand='';return P}}

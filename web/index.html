@@ -4244,7 +4244,18 @@ boot:'Ouverture de ton espace…',noData:'Pas encore de données',
 "rs.undo":"Annuler la réinitialisation",
 "rs.undoConfirm":"Confirmer l'annulation",
 "rs.undone":"Compte remis comme avant",
-"rs.undoNone":"Aucune copie d'annulation pour ce compte"
+"rs.undoNone":"Aucune copie d'annulation pour ce compte",
+"ir.txL":"Intérêts {b} (rapport)",
+"ir.done":"{n} rapport(s) de revenus lu(s) : {u} opération(s) complétée(s) (brut, prélèvements), {a} ajoutée(s), {w} en attente de l’opération correspondante.",
+"ir.brut":"brut {v}",
+"ir.ret":"retenues {v}",
+"ir.rate":"taux {r} %",
+"ir.sum":"D’après {n} rapport(s) sur {all} revenus : {b} bruts, {net} nets, dont {ps} de prélèvements sociaux retenus à la source.",
+"ir.sumW":"Impôt retenu à l’étranger : {w}.",
+"ir.tax":"Montants bruts pour {nb} revenu(s) (d’après les rapports de l’établissement) ; {nn} autre(s) connu(s) seulement en net, à compléter avec l’IFU.",
+"ir.taxPs":"Déjà prélevé à la source : {v}.",
+"ir.taxW":"Impôt retenu à l’étranger : {v} (crédit d’impôt éventuel, à vérifier sur l’IFU).",
+"ir.intN":"Intérêts du compte {a}"
 };
 
 I18N.en={
@@ -6745,7 +6756,18 @@ boot:'Opening your space…',noData:'No data yet',
 "rs.undo":"Undo the reset",
 "rs.undoConfirm":"Confirm undo",
 "rs.undone":"Account restored",
-"rs.undoNone":"No undo copy for this account"
+"rs.undoNone":"No undo copy for this account",
+"ir.txL":"{b} interest (report)",
+"ir.done":"{n} income report(s) read: {u} transaction(s) completed (gross, withholdings), {a} added, {w} waiting for the matching transaction.",
+"ir.brut":"gross {v}",
+"ir.ret":"withheld {v}",
+"ir.rate":"rate {r}%",
+"ir.sum":"From {n} report(s) out of {all} payments: {b} gross, {net} net, including {ps} of social charges withheld at source.",
+"ir.sumW":"Foreign tax withheld: {w}.",
+"ir.tax":"Gross amounts for {nb} payment(s) (from the institution’s reports); {nn} other(s) known only net, to complete from the annual tax statement.",
+"ir.taxPs":"Already withheld at source: {v}.",
+"ir.taxW":"Foreign tax withheld: {v} (possible tax credit, check the annual tax statement).",
+"ir.intN":"{a} account interest"
 };
 
 I18N.es={
@@ -9246,7 +9268,18 @@ boot:'Abriendo tu espacio…',noData:'Aún no hay datos',
 "rs.undo":"Deshacer el restablecimiento",
 "rs.undoConfirm":"Confirmar deshacer",
 "rs.undone":"Cuenta restaurada",
-"rs.undoNone":"No hay copia para deshacer en esta cuenta"
+"rs.undoNone":"No hay copia para deshacer en esta cuenta",
+"ir.txL":"Intereses {b} (informe)",
+"ir.done":"{n} informe(s) de rentas leído(s): {u} operación(es) completada(s) (bruto, retenciones), {a} añadida(s), {w} a la espera de la operación correspondiente.",
+"ir.brut":"bruto {v}",
+"ir.ret":"retenciones {v}",
+"ir.rate":"tipo {r} %",
+"ir.sum":"Según {n} informe(s) de {all} cobros: {b} brutos, {net} netos, de los que {ps} de cargas sociales retenidas en origen.",
+"ir.sumW":"Impuesto retenido en el extranjero: {w}.",
+"ir.tax":"Importes brutos para {nb} cobro(s) (según los informes de la entidad); {nn} otro(s) conocido(s) solo en neto, a completar con el certificado fiscal anual.",
+"ir.taxPs":"Ya retenido en origen: {v}.",
+"ir.taxW":"Impuesto retenido en el extranjero: {v} (posible crédito fiscal, a comprobar en el certificado fiscal).",
+"ir.intN":"Intereses de la cuenta {a}"
 };
 
 I18N.de={
@@ -11747,7 +11780,18 @@ boot:'Dein Bereich wird geöffnet …',noData:'Noch keine Daten',
 "rs.undo":"Zurücksetzen rückgängig machen",
 "rs.undoConfirm":"Rückgängig bestätigen",
 "rs.undone":"Konto wiederhergestellt",
-"rs.undoNone":"Keine Rückgängig-Kopie für dieses Konto"
+"rs.undoNone":"Keine Rückgängig-Kopie für dieses Konto",
+"ir.txL":"{b} Zinsen (Bericht)",
+"ir.done":"{n} Ertragsbericht(e) gelesen: {u} Buchung(en) ergänzt (brutto, Abzüge), {a} hinzugefügt, {w} warten auf die passende Buchung.",
+"ir.brut":"brutto {v}",
+"ir.ret":"Abzüge {v}",
+"ir.rate":"Zins {r} %",
+"ir.sum":"Laut {n} Bericht(en) von {all} Erträgen: {b} brutto, {net} netto, davon {ps} an der Quelle einbehaltene Sozialabgaben.",
+"ir.sumW":"Im Ausland einbehaltene Steuer: {w}.",
+"ir.tax":"Bruttobeträge für {nb} Ertrag/Erträge (laut Berichten des Instituts); {nn} weitere nur netto bekannt, mit der Jahressteuerbescheinigung ergänzen.",
+"ir.taxPs":"Bereits an der Quelle einbehalten: {v}.",
+"ir.taxW":"Im Ausland einbehaltene Steuer: {v} (mögliche Steuergutschrift, in der Steuerbescheinigung prüfen).",
+"ir.intN":"Zinsen Konto {a}"
 };
 
 I18N["it"]={
@@ -43102,11 +43146,13 @@ function accPaid(a){const ops=iopsOf(a.id);if(ops.some(o=>o.t==='dep'||o.t==='wd
 /* prélèvements sociaux applicables aux revenus mobiliers d'une année (hausse de la CSG au 1er janvier 2026) */
 const psYear=y=>+y>=2026?18.6:17.2;
 
+/* retenues déjà opérées à la source, d'après les rapports de revenus (brut connu) ou non (net seulement) */
+function taxRepAdd(r,rep){if(rep){r.nb=(r.nb||0)+1;r.ps=(r.ps||0)+(rep.ps||0);r.w=(r.w||0)+(rep.w||0);r.irw=(r.irw||0)+(rep.ir||0)}else r.nn=(r.nn||0)+1}
 /* revenus de placement perçus pendant une année civile, par compte */
 function taxReceived(y){
   const rows=new Map();const row=a=>{if(!rows.has(a.id))rows.set(a.id,{a,div:0,int:0,cpn:0,real:0,env:(TYP[a.type]||{}).env||''});return rows.get(a.id)};
   D().accounts.forEach(a=>{const ty=TYP[a.type]||{};if(!ty.h)return;const ops=iopsOf(a.id);if(!ops.length)return;
-    ops.forEach(o=>{if(o.d.slice(0,4)!==String(y))return;if(o.t==='div')row(a).div+=conv(iopNet(o),o.cur||a.cur);else if(o.t==='int')row(a).int+=conv(iopNet(o),o.cur||a.cur)});
+    ops.forEach(o=>{if(o.d.slice(0,4)!==String(y))return;if(o.t!=='div'&&o.t!=='int')return;const r=row(a);const v=o.rep?o.rep.b:conv(iopNet(o),o.cur||a.cur);if(o.t==='div')r.div+=v;else r.int+=v;taxRepAdd(r,o.rep)});
     /* plus-values réalisées de l'année : coût moyen pondéré, frais inclus */
     const P={};[...ops].sort((x,z)=>x.d.localeCompare(z.d)||(x.s||0)-(z.s||0)).forEach(o=>{const k=o.isin||norm(o.n||'')||o.sym;if(!k)return;const p=P[k]=P[k]||{q:0,c:0};const q=Math.abs(+o.q||0);
       if(o.t==='buy'||o.t==='in'){p.q+=q;p.c+=Math.abs(+o.amt||0)+(+o.fee||0)+(+o.tax||0)}
@@ -43116,7 +43162,7 @@ function taxReceived(y){
   D().txs.forEach(x=>{if(x.d.slice(0,4)!==String(y)||x.c!=='investIncome'||!(x.a>0))return;const a=D().accounts.find(z=>z.id===x.acc);if(!a||(TYP[a.type]||{}).h&&iopsOf(a.id).length)return;
     /* déjà compté dans l'historique d'une enveloppe (dividende du compte-titres versé sur le compte espèces) */
     if(iDiv.some(o=>Math.abs(iopNet(o)-x.a)<0.011&&Math.abs(daysBetween(o.d,x.d))<=5))return;
-    const r=row(a);if(/interest|int[eé]r[eê]ts?|zins|r[eé]mun/i.test(x.l))r.int+=x.a;else if(/dividend|coupon|distribution|aussch/i.test(x.l))r.div+=x.a;else{r.other=(r.other||0)+x.a}});
+    const r=row(a);const v=x.rep?x.rep.b:x.a;taxRepAdd(r,x.rep);if(/interest|int[eé]r[eê]ts?|zins|r[eé]mun/i.test(x.l))r.int+=v;else if(/dividend|coupon|distribution|aussch/i.test(x.l))r.div+=v;else{r.other=(r.other||0)+v}});
   /* livrets : intérêts estimés de l'année (versés au 31 décembre) */
   D().accounts.forEach(a=>{const ty=TYP[a.type]||{};if(ty.env==='exempt'||ty.env==='pel'){const rate=(+a.rate)||ST().rates[ty.rate]||0;const it=accGross(a)*rate/100;if(it>0.004){const r=row(a);r.int+=it;r.est=true}}});
   return [...rows.values()].filter(r=>Math.abs(r.div)+Math.abs(r.int)+Math.abs(r.real)+Math.abs(r.other||0)>0.004);
@@ -43145,6 +43191,7 @@ function taxReceivedCard(){
     <div class="row"><div class="m"><b>2CK</b><span>${esc(t('tf.b.2ck'))}</span></div><div class="r"><b>${esc(moneyT((div+int)*ir,0))}</b></div></div>
     ${D().accounts.some(a=>a.foreign)?`<div class="row"><div class="m"><b>3916</b><span>${esc(t('tf.b.3916'))}</span></div></div>`:''}
   </div></div><div class="card flat"><b>${esc(t('tf.cmpT'))}</b><div class="list" style="margin-top:6px"><div class="row"><div class="m"><b>${esc(t('tf.cmp.pfu',{p:numT((ir+ps)*100,1)}))}</b></div><div class="r"><b>${esc(moneyT(taxPfu,0))}</b></div></div><div class="row"><div class="m"><b>${esc(t('tf.cmp.bar',{p:tx.tmi}))}</b><span>${esc(t('tf.cmp.barS'))}</span></div><div class="r"><b>${esc(moneyT(taxBar,0))}</b></div></div></div><p class="note" style="margin:8px 0 0">${esc(t(taxBar<taxPfu?'tf.cmp.better':'tf.cmp.keep'))}</p></div></div>`}
+  ${(()=>{const P=R.filter(r=>taxTreat(r)==='pfu'||taxTreat(r)==='pel');const nb=sum(P.map(r=>r.nb||0)),nn=sum(P.map(r=>r.nn||0));if(!nb&&!nn)return '';const ps=sum(P.map(r=>r.ps||0)),w=sum(P.map(r=>r.w||0)),irw=sum(P.map(r=>r.irw||0));return `<p class="note" style="margin-top:10px">${esc(t('ir.tax',{nb,nn}))}${ps+irw>0.004?' '+esc(t('ir.taxPs',{v:moneyT(ps+irw,2)})):''}${w>0.004?' '+esc(t('ir.taxW',{v:moneyT(w,2)})):''}</p>`})()}
   <p class="note" style="margin-top:10px">${esc(t('tf.note',{p:numT(psYear(y),1)}))}${att?' '+esc(t('tf.attached')):''}</p></div>`;
 }
 EXT.A.taxY=v=>{S.ui.taxY=+v;render()};
@@ -44023,7 +44070,7 @@ incomeView=function(){
   const split=`<div class="card"><div class="ch"><h2>${esc(t('inc.split'))}</h2></div>${(()=>{const s=[{k:'div',l:t('inc.div'),v:sum(pi.lines.filter(l=>l.type==='div').map(l=>l.amount)),c:'var(--k3)'},{k:'int',l:t('inc.int'),v:sum(pi.lines.filter(l=>l.type==='int'||l.type==='coupon').map(l=>l.amount)),c:'var(--k2)'},{k:'rent',l:t('inc.rent'),v:sum(pi.lines.filter(l=>l.type==='rent').map(l=>l.amount)),c:'var(--k5)'}];return donut(s,esc(compactT(pi.total)),t('per.year'))+`<div class="legend" style="margin-top:14px">${s.map(x=>`<div class="lg"><i class="sq" style="--c:${x.c}"></i><span class="n">${esc(x.l)}</span><span class="p">${pctT(x.v/(pi.total||1),0)}</span><span class="v">${money(x.v,2)}</span></div>`).join('')}</div>`})()}</div>`;
   const all=divAll();const missC=all.length?`<div class="card" style="margin-top:16px"><div class="ch"><div><h2>${esc(miss.length?t('pi.missT',{n:miss.length}):t('pi.allT'))}</h2><p>${esc(miss.length?t('pi.missS'):t('pi.allS'))}</p></div></div><div class="list">${all.map(({a,h,hist,man,cat,miss:ms})=>{const odd=man>12&&!/covered call|qyld/i.test(h.name);return `<div class="row pim${ms?' miss':''}">${holdAvatar(h,ms?'miss':'')}<div class="m"><b>${esc(h.name)}</b><span>${esc(a.name)} · ${esc(moneyT(hVal(h,a),0))}${ms?' · '+esc(t('pi.noAmt')):man?' · '+esc(t('pi.manual'))+(catOf(h)?' · '+esc(t('ct.forced')):''):cat?' · '+esc(numT(hist,2)+' % · '+catSrcL(h)):hist?' · '+esc(t('pi.fromHist',{p:numT(hist,2)})):''}${odd?' · ⚠ '+esc(t('pi.odd')):''}</span></div><div class="pif"><label><span>${esc(t('pi.yield'))}</span><input type="text" inputmode="decimal" autocomplete="off" id="pid-${h.id}" data-f="piDiv" data-v="${a.id}|${h.id}" value="${man?esc(String(man).replace('.',',')):''}" placeholder="${hist?esc(numT(hist,2)):'%'}"${odd?' class="bad"':''}></label><label><span>${esc(t('pi.freq'))}</span><select data-f="piFreq" data-v="${a.id}|${h.id}"${cat&&!man?' disabled title="'+esc(t('ct.freqCat'))+'"':''}>${[[12,t('pi.f12')],[4,t('pi.f4')],[2,t('pi.f2')],[1,t('pi.f1')]].map(([v,l])=>`<option value="${v}"${((cat&&!man&&catOf(h)?catFreq(catOf(h)):0)||h.dfreq||4)==v?' selected':''}>${esc(l)}</option>`).join('')}</select></label></div></div>`}).join('')}</div><p class="note" style="margin-top:8px">${esc(t('pi.missNote'))}</p></div>`:'';
   const src=`<div class="card" style="margin-top:16px"><div class="ch"><div><h2>${esc(t('inc.sources'))}</h2><p>${esc(t('pi.srcS'))}</p></div></div><div class="list">${pi.lines.map(l=>{const r=recOf(l);return `<div class="row">${l.h?holdAvatar(l.h):l.acc?accAvatar(l.acc,true):`<span class="av sm" style="--c:var(--k2)">${ico('savings')}</span>`}<div class="m"><b>${esc(l.name)}</b><span>${esc(l.acc.name)} · ${esc(t('inc.'+(l.type==='coupon'?'int':l.type)))}${l.yield!=null?' · '+pctT(l.yield/100,2):''}${l.src==='cash'?' · '+esc(t('pi.fromInt')):''}${l.src==='cat'?' · '+esc(catSrcL(l.h)):''}${l.src==='ops'?' · '+esc(t(l.est==='x'?'inc.fromOpsEst':l.est==='one'?'inc.fromOpsOne':'inc.fromOps')):l.src==='manual'?' · '+esc(t('pi.manual')):''}${l.months&&l.months.length&&l.months.length<12?' · '+esc(l.months.map(m=>monthT('2024-'+String(m).padStart(2,'0'),true)).join(', ')):''}</span></div><div class="r"><b>${money(l.amount,2)}</b><span class="muted">${r>0?esc(t('pi.got',{v:moneyT(r,2)})):esc(moneyT(l.amount/12,2))+' / '+esc(t('per.month'))}</span></div></div>`}).join('')||`<p class="note">—</p>`}</div></div>`;
-  const recC=R.length?`<div class="card" style="margin-top:16px"><div class="ch"><div><h2>${esc(t('pi.recT'))}</h2><p>${esc(t('pi.recS',{v:moneyT(sum(R.map(r=>r.v)),2)}))}</p></div></div><div class="list">${R.slice(0,12).map(r=>`<div class="row"><div class="m"><b>${esc(r.name)}</b><span>${esc(dateT(r.d))} · ${esc(r.acc?r.acc.name:'—')} · ${esc(t('inc.'+r.type))}</span></div><div class="r"><b class="good">+${esc(moneyT(r.v,2))}</b></div></div>`).join('')}</div></div>`:'';
+  const recC=R.length?`<div class="card" style="margin-top:16px"><div class="ch"><div><h2>${esc(t('pi.recT'))}</h2><p>${esc(t('pi.recS',{v:moneyT(sum(R.map(r=>r.v)),2)}))}</p></div></div><div class="list">${R.slice(0,12).map(r=>`<div class="row"><div class="m"><b>${esc(r.name)}</b><span>${esc(dateT(r.d))} · ${esc(r.acc?r.acc.name:'—')} · ${esc(t('inc.'+r.type))}${r.rep?' · '+esc(incRepTxt(r.rep)):''}</span></div><div class="r"><b class="good">+${esc(moneyT(r.v,2))}</b></div></div>`).join('')}</div>${incSumHTML(R)}</div>`:'';
   return kp+`<div class="grid g-21">${cal}${split}</div>${missC}${src}${recC}<p class="note" style="margin-top:12px">${esc(t('inc.note'))}</p>`;
 };
 /* détail d'un mois : revenus prévus et revenus perçus la dernière fois que ce mois est passé */
@@ -45350,6 +45397,117 @@ EXT.boot.push(d=>{setTimeout(async()=>{if(S.data!==d||S.demo)return;let n=0;
     if(meta)n+=rsHeal(a,meta)}
   if(n){save();try{applyBase()}catch(e){}try{if(typeof syncLive==='function')syncLive()}catch(e){}render()}},3500)});
 
+/* ================= V5.2 — rapports de revenus (intérêts, dividendes) : brut, prélèvements, taux ================= */
+/* Lit les « rapports d'intérêts » et avis de « dividende en espèces » (Trade Republic) — en PDF importé, déposé dans le dossier Drive,
+   ou transmis en texte par la tâche mensuelle — et complète l'opération correspondante déjà présente (montant net) avec
+   le montant brut, les prélèvements sociaux, l'impôt retenu à l'étranger et le taux. Jamais de doublon : un rapport sans
+   opération correspondante attend (l'export CSV peut arriver plus tard) ; un intérêt toujours sans opération 10 jours
+   après sa date est ajouté. */
+const incNum=s=>{s=String(s||'').replace(/[\s  ]/g,'').replace('−','-');const c=s.lastIndexOf(','),d=s.lastIndexOf('.');if(c>d)s=s.replace(/\./g,'').replace(',','.');else s=s.replace(/,/g,'');const v=parseFloat(s);return isFinite(v)?v:NaN};
+const incDate=s=>{const m=String(s||'').match(/(\d{2})[\/.](\d{2})[\/.](\d{4})/);return m?m[3]+'-'+m[2]+'-'+m[1]:null};
+const incR2=v=>Math.round(v*100)/100;
+function incParse(text,name){
+  const T=String(text||'');if(!/trade\s*republic/i.test(T))return null;
+  const L=T.split(/\r?\n/).map(l=>l.replace(/[\s  ]+/g,' ').trim()).filter(Boolean);
+  const N='(-?[\\d.,]+)';const amt=(re,cur)=>{for(const l of L){const m=l.match(re);if(m){const v=incNum(m[1]);if(isFinite(v))return v}}return NaN};
+  const after=(re,re2)=>{const i=L.findIndex(l=>re.test(l));if(i<0)return null;for(let j=i;j<Math.min(L.length,i+4);j++){const m=L[j].match(re2);if(m)return m}return null};
+  const doc=String(name||'').slice(0,80);
+  /* ---- rapport d'intérêts (compte espèces) ---- */
+  if(/RAPPORT D.INT[ÉE]R[ÊE]TS/i.test(T)){
+    const rates=[];L.forEach(l=>{const m=l.match(/(\d{1,2}[.,]\d{1,3}) ?% (\d{2}\/\d{2}\/\d{4}) ?- ?(\d{2}\/\d{2}\/\d{4})/);if(m)rates.push([incNum(m[1]),incDate(m[2]),incDate(m[3])])});
+    let brut=amt(new RegExp('Base fiscale '+N+' ?EUR','i'));if(!isFinite(brut))brut=amt(new RegExp('^Esp[èe]ces Int[ée]r[êe]ts.*? '+N+' ?EUR$','i'));
+    const ps=Math.abs(amt(new RegExp('Pr[ée]l[èe]vements sociaux '+N+' ?EUR','i'))||0);
+    const ir=Math.abs(amt(new RegExp('(?:Pr[ée]l[èe]vement forfaitaire|Imp[ôo]t sur le revenu|Acompte d.imp[ôo]t)[^\\d-]*'+N+' ?EUR','i'))||0);
+    const m=after(/DATE D.EFFET/i,/(\d{2}\/\d{2}\/\d{4}) (-?[\d.,]+) ?EUR$/);
+    const d=m?incDate(m[1]):incDate((T.match(/DATE (\d{2}\/\d{2}\/\d{4})/)||[])[1]);let net=m?incNum(m[2]):NaN;
+    if(!isFinite(brut)||!d)return null;if(!isFinite(net))net=incR2(brut-ps-ir);
+    const per=rates.length?[rates[0][1],rates[rates.length-1][2]]:null;
+    return {k:'int',bank:'Trade Republic',d,b:incR2(brut),ps:incR2(ps||0),ir:incR2(ir||0),w:0,n:incR2(net),rt:rates,per,doc}}
+  /* ---- dividende / distribution en espèces (compte-titres, PEA) ---- */
+  if(/\b(DIVIDENDE|DISTRIBUTION)\b/.test(T)&&/R[ÉE]CAPITULATIF/.test(T)&&/POSITION/.test(T)){
+    const isin=(T.match(/\b([A-Z]{2}[A-Z0-9]{9}\d)\b/)||[])[1]||'';
+    const hi=L.findIndex(l=>/^POSITION .*QUANTIT[ÉE]/i.test(l));let nm='',g0=NaN,c0='EUR';
+    if(hi>=0){const m=(L[hi+1]||'').match(/^(.*\S) ([\d.,]+) ([A-Z]{3})$/);if(m){nm=m[1].replace(/ [\d.,]+ (?:titre\(s\)|unit\.?).*$/i,'').trim();g0=incNum(m[2]);c0=m[3]}}
+    const q=T.match(/([\d.,]+) ?(?:unit\.?|titre\(s\)) ?([\d.,]+) ([A-Z]{3})/i);
+    if(!isFinite(g0)){const m=T.match(/TOTAL ([\d.,]+) ([A-Z]{3})/);if(m){g0=incNum(m[1]);c0=m[2]}}
+    const fxm=T.match(/([\d.,]+) (?:([A-Z]{3})\/EUR|EUR\/([A-Z]{3}))\b/);const fx=fxm&&(fxm[2]||fxm[3])===c0?incNum(fxm[1]):(c0==='EUR'?1:NaN);
+    let w=0;L.forEach(l=>{const m=l.match(/^(?:(?:Imp[ôo]t|Imposition|Retenue) (?:à|a) la source|Quellensteuer)[^\d-]*?(-?[\d.,]+) ([A-Z]{3})$/i);if(m){const v=Math.abs(incNum(m[1]));w+=m[2]==='EUR'?v:(isFinite(fx)&&fx>0?v/fx:NaN)}});
+    const ps=Math.abs(amt(/Pr[ée]l[èe]vements sociaux.*? (-?[\d.,]+) ?EUR$/i)||0);
+    const ir=Math.abs(amt(/(?:Pr[ée]l[èe]vement forfaitaire|Imp[ôo]t sur le revenu|Acompte d.imp[ôo]t)[^\d-]*?(-?[\d.,]+) ?EUR$/i)||0);
+    const pm=after(/DATE DE (?:PAIEMENT|VALEUR)/i,/(\d{2}[.\/]\d{2}[.\/]\d{4}) (-?[\d.,]+) ?EUR$/);const d=pm?incDate(pm[1]):null;const net=pm?incNum(pm[2]):NaN;
+    const ex=incDate((T.match(/(?:date d.ex[ée]cution au|à la date du) -?(\d{2}[.\/]\d{2}[.\/]\d{4})/i)||[])[1]);
+    if(!d||!isFinite(net)||!isFinite(g0))return null;
+    const b=c0==='EUR'?g0:(isFinite(fx)&&fx>0?g0/fx:NaN);if(!isFinite(b))return null;
+    /* retenue étrangère en euros : écart entre le brut converti et le sous-total en euros après retenue */
+    const subE=L.map(l=>l.match(/^Sous-total.*? (-?[\d.,]+) ?EUR$/i)).filter(Boolean).map(m=>incNum(m[1])).pop();if(w>0&&isFinite(subE)&&subE<=b)w=b-subE;
+    return {k:'div',bank:'Trade Republic',d,ex,isin,name:nm,qty:q?incNum(q[1]):null,unit:q?incNum(q[2]):null,c0,g0:incR2(g0),fx:c0==='EUR'?null:fx,
+      b:incR2(b),w:incR2(isFinite(w)?w:0),ps:incR2(ps),ir:incR2(ir),n:incR2(net),doc}}
+  return null}
+
+/* ---------- rapprochement avec les opérations de Vigie ---------- */
+const incKey=r=>r.k+'|'+r.d+'|'+r.n.toFixed(2)+'|'+(r.isin||'');
+const incCfg=()=>{const s=ST();if(!s.incRep||typeof s.incRep!=='object')s.incRep={};const c=s.incRep;if(!Array.isArray(c.wait))c.wait=[];if(!Array.isArray(c.miss))c.miss=[];delete c.done;return c};
+const incSlim=r=>{const o={b:r.b,ps:r.ps,ir:r.ir,w:r.w,n:r.n,doc:r.doc};if(r.rt&&r.rt.length)o.rt=r.rt;if(r.per)o.per=r.per;if(r.fx)o.fx=r.fx;if(r.c0&&r.c0!=='EUR'){o.c0=r.c0;o.g0=r.g0}if(r.qty)o.q=r.qty;if(r.unit)o.u=r.unit;return o};
+function incCashAcc(bank){const re=new RegExp(bank.replace(/\s+/g,' ?'),'i');return D().accounts.find(a=>(a.type==='checking'||a.type==='savings')&&re.test((a.inst||'')+' '+a.name)&&!isClosed(a))||D().accounts.find(a=>(a.type==='checking'||a.type==='savings')&&re.test((a.inst||'')+' '+a.name))}
+function incMatch(r){
+  const near=(d,k)=>Math.abs(daysBetween(d,r.d))<=k;
+  if(r.k==='int'){const a=incCashAcc(r.bank);if(!a)return null;
+    const c=D().txs.filter(x=>x.acc===a.id&&x.a>0&&Math.abs(x.a-r.n)<0.006&&near(x.d,3)&&(!x.rep||x.rep.doc===r.doc||incKey({k:'int',d:x.d,n:x.rep.n})===incKey(r)));
+    c.sort((x,y)=>Math.abs(daysBetween(x.d,r.d))-Math.abs(daysBetween(y.d,r.d))||(/interest|int[eé]r/i.test(y.l)-/interest|int[eé]r/i.test(x.l)));return c[0]?{tx:c[0],acc:a}:{acc:a}}
+  const nm=norm(r.name||'');
+  const io=(D().iops||[]).filter(o=>o.t==='div'&&((r.isin&&o.isin===r.isin)||(nm&&norm(o.n||'')===nm))&&(near(o.d,7)||(r.ex&&Math.abs(daysBetween(o.d,r.ex))<=3))&&(Math.abs(iopNet(o)-r.n)<0.021||Math.abs((+o.amt||0)-(r.b-r.w))<0.021));
+  io.sort((x,y)=>Math.abs(iopNet(x)-r.n)-Math.abs(iopNet(y)-r.n));if(io[0])return {io:io[0]};
+  const tx=D().txs.filter(x=>x.a>0&&x.c==='investIncome'&&Math.abs(x.a-r.n)<0.011&&near(x.d,7)&&!x.rep);if(tx[0])return {tx:tx[0]};
+  return null}
+/* applique une liste de rapports ; renvoie le nombre d'opérations complétées, ajoutées, en attente */
+function incApply(reps){const C=incCfg();let upd=0,add=0,same=0;const keep=[];const now=today();
+  const all=[...C.wait,...reps];const seen=new Set();
+  all.forEach(r=>{if(!r||!r.k||!r.d||!isFinite(r.n))return;const k=incKey(r);if(seen.has(k))return;seen.add(k);
+    const m=incMatch(r);const s=incSlim(r);
+    if(m&&m.io){const before=JSON.stringify(m.io.rep||null);m.io.rep=s;if(before===JSON.stringify(s))same++;else upd++;return}
+    if(m&&m.tx){const before=JSON.stringify(m.tx.rep||null);m.tx.rep=s;if(m.tx.c==='uncat'||!m.tx.c)m.tx.c='investIncome';if(before===JSON.stringify(s))same++;else upd++;return}
+    if(r.k==='int'&&m&&m.acc&&daysBetween(r.d,now)>=10){D().txs.push({id:'rep-'+m.acc.id.slice(-5)+'-'+r.d.replace(/-/g,''),d:r.d,a:r.n,l:t('ir.txL',{b:r.bank}),c:'investIncome',acc:m.acc.id,rep:s,src:'pdf'});add++;return}
+    if(daysBetween(r.d,now)>45){if(!C.miss.some(x=>incKey(x)===k))C.miss.push(r);return}
+    keep.push(r)});
+  C.wait=keep.slice(-80);C.miss=C.miss.slice(-30);
+  if(upd||add)C.at=new Date().toISOString();
+  return {upd,add,same,wait:C.wait.length,miss:C.miss.length}}
+let incToastT=null,incAcc={upd:0,add:0,same:0,n:0};
+function incApplyUI(reps){const r=incApply(reps);['upd','add','same'].forEach(k=>incAcc[k]+=r[k]);incAcc.n+=reps.length;incAcc.wait=r.wait;save();
+  clearTimeout(incToastT);incToastT=setTimeout(()=>{const a=incAcc;incAcc={upd:0,add:0,same:0,n:0};toast(t('ir.done',{n:a.n,u:a.upd+a.same,a:a.add,w:a.wait||0}));render()},500)}
+
+/* ---------- PDF importés (bouton Importer, dossier Drive « Vigie — dépôt ») ---------- */
+const INC_CACHE=new WeakMap();
+{const _rp=readPdf;readPdf=async function(file,password){const c=INC_CACHE.get(file);if(c&&(c.pwd||'')===(password||'')){INC_CACHE.delete(file);return c}return _rp(file,password)}}
+{const _ni=nextImport;nextImport=async function(f0){const I=S.ui.imp;if(!I)return _ni(f0);const f=f0||I.queue[0];
+  if(!f||!(/\.pdf$/i.test(f.name||'')||f.type==='application/pdf')||f.size>15e6)return _ni(f0);
+  let r=null;try{r=await readPdf(f,f0?I.pwd:'')}catch(e){return _ni(f0)}
+  let rep=null;try{rep=incParse(r.text,f.name)}catch(e){}
+  if(!rep){INC_CACHE.set(f,r);return _ni(f0)}
+  if(!f0)I.queue.shift();incApplyUI([rep]);return nextImport()}}
+
+/* ---------- textes transmis par la tâche mensuelle (patch.incTxt) ---------- */
+/* lus tout de suite et mis en attente dans les réglages (le document patch est supprimé une seconde après l'ouverture), puis rapprochés */
+EXT.boot.push(d=>{if(S.demo)return;const L=STORE.incPend;STORE.incPend=null;let n=0;
+  if(Array.isArray(L)&&L.length){const C=incCfg();const ks=new Set(C.wait.map(incKey));L.forEach(x=>{try{const r=incParse(x.t,x.n);if(r&&!ks.has(incKey(r))){C.wait.push(r);ks.add(incKey(r));n++}}catch(e){}})}
+  setTimeout(()=>{if(S.data!==d)return;const C=incCfg();if(!C.wait.length)return;
+    try{const r=incApply([]);save();if(n||r.upd||r.add)toast(t('ir.done',{n:n||r.upd+r.add,u:r.upd+r.same,a:r.add,w:r.wait}))}catch(e){console.error(e)}},4000)});
+
+/* ---------- affichage ---------- */
+/* complément d'une ligne de revenu : brut, retenues, taux */
+function incRepTxt(rep){if(!rep)return '';const p=[t('ir.brut',{v:moneyT(rep.b,2)})];const ret=(rep.ps||0)+(rep.ir||0)+(rep.w||0);
+  if(ret>0.004)p.push(t('ir.ret',{v:moneyT(ret,2)}));if(rep.rt&&rep.rt.length)p.push(t('ir.rate',{r:numT(rep.rt[rep.rt.length-1][0],2)}));return p.join(' · ')}
+{const _rl=receivedList;receivedList=function(from,to){const out=_rl(from,to);
+  /* retrouve le rapport attaché à chaque revenu (opération de portefeuille ou bancaire) */
+  const io=(D().iops||[]).filter(o=>o.rep&&o.d>=from&&o.d<=to),tx=D().txs.filter(x=>x.rep&&x.d>=from&&x.d<=to);
+  out.forEach(r=>{const o=io.find(o=>o.d===r.d&&Math.abs(conv(iopNet(o),o.cur||(r.acc||{}).cur)-r.v)<0.011)||tx.find(x=>x.d===r.d&&Math.abs(x.a-r.v)<0.011);if(o)r.rep=o.rep;
+    /* libellé technique de la banque (« Interest payment for payout collection … ») remplacé par un nom lisible */
+    if(r.type==='int'&&/^interest payment|^zinszahlung/i.test(r.name)&&r.acc)r.name=t('ir.intN',{a:r.acc.name})});return out}}
+/* bilan des 12 derniers mois : brut, prélèvements sociaux, impôt étranger */
+function incSum(L){const k=L.filter(r=>r.rep);return {n:k.length,all:L.length,b:sum(k.map(r=>r.rep.b)),net:sum(k.map(r=>r.rep.n)),ps:sum(k.map(r=>r.rep.ps||0)),w:sum(k.map(r=>r.rep.w||0)),ir:sum(k.map(r=>r.rep.ir||0))}}
+function incSumHTML(L){const s=incSum(L);if(!s.n)return '';
+  return `<p class="note" style="margin:8px 0 0">${esc(t('ir.sum',{n:s.n,all:s.all,b:moneyT(s.b,2),net:moneyT(s.net,2),ps:moneyT(s.ps,2)}))}${s.w>0.004?' '+esc(t('ir.sumW',{w:moneyT(s.w,2)})):''}</p>`}
+
 /* ================= état ================= */
 const S={data:null,real:null,demo:false,phase:'boot',cap:{sample:undefined,downloads:undefined},
   ui:{view:'home',period:'1Y',cls:'all',ovl:null,confirm:null}};
@@ -45386,7 +45544,7 @@ async function loadData(){
       for(const y of years){const s=await STORE.db.doc(P('tx-'+y)).get();if(s.exists){const r=own((s.data()||{}).rows)||[];STORE.last['tx-'+y]=JSON.stringify({rows:r});raw.txs.push(...r)}}
       raw.iops=[];for(const y of (m.ioYears||[])){const s=await STORE.db.doc(P('io-'+y)).get();if(s.exists){const r=own((s.data()||{}).rows)||[];STORE.last['io-'+y]=JSON.stringify({rows:r});raw.iops.push(...r)}}
       /* corrections ponctuelles déposées par l'assistant (dates d'ouverture…) : appliquées une fois au chargement */
-      try{const pt=await STORE.db.doc(P('patch')).get();if(pt.exists){const q=own(pt.data())||{};(raw.accounts||[]).forEach(a=>{const c=(q.acc||{})[a.id];if(c)['opened','inst','closed'].forEach(k=>{if(typeof c[k]==='string'&&/^[\w .:\-À-ÿ!·]{1,60}$/.test(c[k]))a[k]=c[k]});if(c&&typeof c.name==='string'&&c.name.trim()&&c.name.length<=60)a.name=c.name.trim();if(c&&isFinite(+c.balance)&&c.balance!==null&&c.balance!=='')a.balance=Math.round(+c.balance*100)/100});(Array.isArray(q.txAdd)?q.txAdd:[]).forEach(x=>{if(x&&typeof x.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.d||'')&&isFinite(+x.a)&&(raw.accounts||[]).some(a=>a.id===x.acc)&&!raw.txs.some(y=>y.id===x.id)){raw.txs.push({id:x.id,d:x.d,a:+x.a,l:String(x.l||'').slice(0,80),c:'transfer',acc:x.acc,adj:1,mc:1,note:String(x.note||'').slice(0,200)});const yy=x.d.slice(0,4);if(!(m.txYears||[]).includes(yy))(m.txYears=m.txYears||[]).push(yy)}});if(Array.isArray(q.trCsv))STORE.trPend=q.trCsv.filter(x=>typeof x==='string'&&x.length<400000).slice(0,24);(Array.isArray(q.txImp)?q.txImp:[]).forEach(x=>{if(x&&typeof x.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.d||'')&&isFinite(+x.a)&&(raw.accounts||[]).some(a=>a.id===x.acc)&&!raw.txs.some(y=>y.id===x.id)){const l=String(x.l||'').slice(0,80);let c='otherOut';try{c=categorize(l,+x.a,raw.rules||[])||c}catch(e){}raw.txs.push({id:x.id,d:x.d,a:+x.a,l,c,acc:x.acc,src:'import'});const yy=x.d.slice(0,4);if(!(m.txYears||[]).includes(yy))(m.txYears=m.txYears||[]).push(yy)}});if(q.gsync&&q.gsync.files&&typeof q.gsync.files==='object'){raw.settings=raw.settings||{};const g=raw.settings.gsync=(raw.settings.gsync&&typeof raw.settings.gsync==='object')?raw.settings.gsync:{};g.files=g.files||{};Object.entries(q.gsync.files).forEach(([k,v])=>{if(['pea','cto','liv','debt','mkt','cry'].includes(k)&&/^[A-Za-z0-9_-]{20,}$/.test(String(v)))g.files[k]=String(v)})}if(Array.isArray(q.detach)){raw.settings=raw.settings||{};const F=raw.settings.finary=raw.settings.finary||{map:{}};F.map=F.map||{};q.detach.forEach(id=>{const a=(raw.accounts||[]).find(x=>x.id===id);if(!a)return;Object.keys(F.map).forEach(k=>{if(F.map[k]===id)F.map[k]='__skip'});delete a.fid;delete a.fsync;delete a.fwarn;(a.holdings||[]).forEach(h=>{delete h.fin;delete h.fhid;if(h.liveSrc==='Finary'){delete h.liveSrc;delete h.liveAt}});if(!a.src)a.src='manual'})}if(q.fe&&typeof q.fe==='object')Object.entries(q.fe).forEach(([id,c])=>{const a=(raw.accounts||[]).find(x=>x.id===id);if(!a||!c)return;(a.holdings||[]).filter(h=>h.kind==='fe').forEach(h=>{if(isFinite(+c.rate)&&+c.rate>0&&+c.rate<20)h.feRate=+c.rate;if(/^\d{4}-\d{2}-\d{2}$/.test(c.from||''))h.feFrom=c.from})});if(/^[A-Za-z0-9_-]{20,}$/.test(String(q.bkFolder||''))){raw.settings=raw.settings||{};const b=raw.settings.backup=(raw.settings.backup&&typeof raw.settings.backup==='object')?raw.settings.backup:{};if(!b.folder)b.folder=String(q.bkFolder)}STORE.patched=1}}catch(e){}
+      try{const pt=await STORE.db.doc(P('patch')).get();if(pt.exists){const q=own(pt.data())||{};(raw.accounts||[]).forEach(a=>{const c=(q.acc||{})[a.id];if(c)['opened','inst','closed'].forEach(k=>{if(typeof c[k]==='string'&&/^[\w .:\-À-ÿ!·]{1,60}$/.test(c[k]))a[k]=c[k]});if(c&&typeof c.name==='string'&&c.name.trim()&&c.name.length<=60)a.name=c.name.trim();if(c&&isFinite(+c.balance)&&c.balance!==null&&c.balance!=='')a.balance=Math.round(+c.balance*100)/100});(Array.isArray(q.txAdd)?q.txAdd:[]).forEach(x=>{if(x&&typeof x.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.d||'')&&isFinite(+x.a)&&(raw.accounts||[]).some(a=>a.id===x.acc)&&!raw.txs.some(y=>y.id===x.id)){raw.txs.push({id:x.id,d:x.d,a:+x.a,l:String(x.l||'').slice(0,80),c:'transfer',acc:x.acc,adj:1,mc:1,note:String(x.note||'').slice(0,200)});const yy=x.d.slice(0,4);if(!(m.txYears||[]).includes(yy))(m.txYears=m.txYears||[]).push(yy)}});if(Array.isArray(q.incTxt))STORE.incPend=q.incTxt.map(x=>typeof x==='string'?{t:x}:x).filter(x=>x&&typeof x.t==='string'&&x.t.length<60000).slice(0,400).map(x=>({t:x.t,n:String(x.n||'').slice(0,80)}));if(Array.isArray(q.trCsv))STORE.trPend=q.trCsv.filter(x=>typeof x==='string'&&x.length<400000).slice(0,24);(Array.isArray(q.txImp)?q.txImp:[]).forEach(x=>{if(x&&typeof x.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.d||'')&&isFinite(+x.a)&&(raw.accounts||[]).some(a=>a.id===x.acc)&&!raw.txs.some(y=>y.id===x.id)){const l=String(x.l||'').slice(0,80);let c='otherOut';try{c=categorize(l,+x.a,raw.rules||[])||c}catch(e){}raw.txs.push({id:x.id,d:x.d,a:+x.a,l,c,acc:x.acc,src:'import'});const yy=x.d.slice(0,4);if(!(m.txYears||[]).includes(yy))(m.txYears=m.txYears||[]).push(yy)}});if(q.gsync&&q.gsync.files&&typeof q.gsync.files==='object'){raw.settings=raw.settings||{};const g=raw.settings.gsync=(raw.settings.gsync&&typeof raw.settings.gsync==='object')?raw.settings.gsync:{};g.files=g.files||{};Object.entries(q.gsync.files).forEach(([k,v])=>{if(['pea','cto','liv','debt','mkt','cry'].includes(k)&&/^[A-Za-z0-9_-]{20,}$/.test(String(v)))g.files[k]=String(v)})}if(Array.isArray(q.detach)){raw.settings=raw.settings||{};const F=raw.settings.finary=raw.settings.finary||{map:{}};F.map=F.map||{};q.detach.forEach(id=>{const a=(raw.accounts||[]).find(x=>x.id===id);if(!a)return;Object.keys(F.map).forEach(k=>{if(F.map[k]===id)F.map[k]='__skip'});delete a.fid;delete a.fsync;delete a.fwarn;(a.holdings||[]).forEach(h=>{delete h.fin;delete h.fhid;if(h.liveSrc==='Finary'){delete h.liveSrc;delete h.liveAt}});if(!a.src)a.src='manual'})}if(q.fe&&typeof q.fe==='object')Object.entries(q.fe).forEach(([id,c])=>{const a=(raw.accounts||[]).find(x=>x.id===id);if(!a||!c)return;(a.holdings||[]).filter(h=>h.kind==='fe').forEach(h=>{if(isFinite(+c.rate)&&+c.rate>0&&+c.rate<20)h.feRate=+c.rate;if(/^\d{4}-\d{2}-\d{2}$/.test(c.from||''))h.feFrom=c.from})});if(/^[A-Za-z0-9_-]{20,}$/.test(String(q.bkFolder||''))){raw.settings=raw.settings||{};const b=raw.settings.backup=(raw.settings.backup&&typeof raw.settings.backup==='object')?raw.settings.backup:{};if(!b.folder)b.folder=String(q.bkFolder)}STORE.patched=1}}catch(e){}
       const d=raw;
       STORE.lastIo=(m.ioYears||[]).slice();
       STORE.last.main=JSON.stringify(m);

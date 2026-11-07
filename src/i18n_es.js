@@ -2496,5 +2496,16 @@ boot:'Abriendo tu espacio…',noData:'Aún no hay datos',
 "rs.undo":"Deshacer el restablecimiento",
 "rs.undoConfirm":"Confirmar deshacer",
 "rs.undone":"Cuenta restaurada",
-"rs.undoNone":"No hay copia para deshacer en esta cuenta"
+"rs.undoNone":"No hay copia para deshacer en esta cuenta",
+"ir.txL":"Intereses {b} (informe)",
+"ir.done":"{n} informe(s) de rentas leído(s): {u} operación(es) completada(s) (bruto, retenciones), {a} añadida(s), {w} a la espera de la operación correspondiente.",
+"ir.brut":"bruto {v}",
+"ir.ret":"retenciones {v}",
+"ir.rate":"tipo {r} %",
+"ir.sum":"Según {n} informe(s) de {all} cobros: {b} brutos, {net} netos, de los que {ps} de cargas sociales retenidas en origen.",
+"ir.sumW":"Impuesto retenido en el extranjero: {w}.",
+"ir.tax":"Importes brutos para {nb} cobro(s) (según los informes de la entidad); {nn} otro(s) conocido(s) solo en neto, a completar con el certificado fiscal anual.",
+"ir.taxPs":"Ya retenido en origen: {v}.",
+"ir.taxW":"Impuesto retenido en el extranjero: {v} (posible crédito fiscal, a comprobar en el certificado fiscal).",
+"ir.intN":"Intereses de la cuenta {a}"
 };

@@ -5,11 +5,13 @@ function accPaid(a){const ops=iopsOf(a.id);if(ops.some(o=>o.t==='dep'||o.t==='wd
 /* prélèvements sociaux applicables aux revenus mobiliers d'une année (hausse de la CSG au 1er janvier 2026) */
 const psYear=y=>+y>=2026?18.6:17.2;
 
+/* retenues déjà opérées à la source, d'après les rapports de revenus (brut connu) ou non (net seulement) */
+function taxRepAdd(r,rep){if(rep){r.nb=(r.nb||0)+1;r.ps=(r.ps||0)+(rep.ps||0);r.w=(r.w||0)+(rep.w||0);r.irw=(r.irw||0)+(rep.ir||0)}else r.nn=(r.nn||0)+1}
 /* revenus de placement perçus pendant une année civile, par compte */
 function taxReceived(y){
   const rows=new Map();const row=a=>{if(!rows.has(a.id))rows.set(a.id,{a,div:0,int:0,cpn:0,real:0,env:(TYP[a.type]||{}).env||''});return rows.get(a.id)};
   D().accounts.forEach(a=>{const ty=TYP[a.type]||{};if(!ty.h)return;const ops=iopsOf(a.id);if(!ops.length)return;
-    ops.forEach(o=>{if(o.d.slice(0,4)!==String(y))return;if(o.t==='div')row(a).div+=conv(iopNet(o),o.cur||a.cur);else if(o.t==='int')row(a).int+=conv(iopNet(o),o.cur||a.cur)});
+    ops.forEach(o=>{if(o.d.slice(0,4)!==String(y))return;if(o.t!=='div'&&o.t!=='int')return;const r=row(a);const v=o.rep?o.rep.b:conv(iopNet(o),o.cur||a.cur);if(o.t==='div')r.div+=v;else r.int+=v;taxRepAdd(r,o.rep)});
     /* plus-values réalisées de l'année : coût moyen pondéré, frais inclus */
     const P={};[...ops].sort((x,z)=>x.d.localeCompare(z.d)||(x.s||0)-(z.s||0)).forEach(o=>{const k=o.isin||norm(o.n||'')||o.sym;if(!k)return;const p=P[k]=P[k]||{q:0,c:0};const q=Math.abs(+o.q||0);
       if(o.t==='buy'||o.t==='in'){p.q+=q;p.c+=Math.abs(+o.amt||0)+(+o.fee||0)+(+o.tax||0)}
@@ -19,7 +21,7 @@ function taxReceived(y){
   D().txs.forEach(x=>{if(x.d.slice(0,4)!==String(y)||x.c!=='investIncome'||!(x.a>0))return;const a=D().accounts.find(z=>z.id===x.acc);if(!a||(TYP[a.type]||{}).h&&iopsOf(a.id).length)return;
     /* déjà compté dans l'historique d'une enveloppe (dividende du compte-titres versé sur le compte espèces) */
     if(iDiv.some(o=>Math.abs(iopNet(o)-x.a)<0.011&&Math.abs(daysBetween(o.d,x.d))<=5))return;
-    const r=row(a);if(/interest|int[eé]r[eê]ts?|zins|r[eé]mun/i.test(x.l))r.int+=x.a;else if(/dividend|coupon|distribution|aussch/i.test(x.l))r.div+=x.a;else{r.other=(r.other||0)+x.a}});
+    const r=row(a);const v=x.rep?x.rep.b:x.a;taxRepAdd(r,x.rep);if(/interest|int[eé]r[eê]ts?|zins|r[eé]mun/i.test(x.l))r.int+=v;else if(/dividend|coupon|distribution|aussch/i.test(x.l))r.div+=v;else{r.other=(r.other||0)+v}});
   /* livrets : intérêts estimés de l'année (versés au 31 décembre) */
   D().accounts.forEach(a=>{const ty=TYP[a.type]||{};if(ty.env==='exempt'||ty.env==='pel'){const rate=(+a.rate)||ST().rates[ty.rate]||0;const it=accGross(a)*rate/100;if(it>0.004){const r=row(a);r.int+=it;r.est=true}}});
   return [...rows.values()].filter(r=>Math.abs(r.div)+Math.abs(r.int)+Math.abs(r.real)+Math.abs(r.other||0)>0.004);
@@ -48,6 +50,7 @@ function taxReceivedCard(){
     <div class="row"><div class="m"><b>2CK</b><span>${esc(t('tf.b.2ck'))}</span></div><div class="r"><b>${esc(moneyT((div+int)*ir,0))}</b></div></div>
     ${D().accounts.some(a=>a.foreign)?`<div class="row"><div class="m"><b>3916</b><span>${esc(t('tf.b.3916'))}</span></div></div>`:''}
   </div></div><div class="card flat"><b>${esc(t('tf.cmpT'))}</b><div class="list" style="margin-top:6px"><div class="row"><div class="m"><b>${esc(t('tf.cmp.pfu',{p:numT((ir+ps)*100,1)}))}</b></div><div class="r"><b>${esc(moneyT(taxPfu,0))}</b></div></div><div class="row"><div class="m"><b>${esc(t('tf.cmp.bar',{p:tx.tmi}))}</b><span>${esc(t('tf.cmp.barS'))}</span></div><div class="r"><b>${esc(moneyT(taxBar,0))}</b></div></div></div><p class="note" style="margin:8px 0 0">${esc(t(taxBar<taxPfu?'tf.cmp.better':'tf.cmp.keep'))}</p></div></div>`}
+  ${(()=>{const P=R.filter(r=>taxTreat(r)==='pfu'||taxTreat(r)==='pel');const nb=sum(P.map(r=>r.nb||0)),nn=sum(P.map(r=>r.nn||0));if(!nb&&!nn)return '';const ps=sum(P.map(r=>r.ps||0)),w=sum(P.map(r=>r.w||0)),irw=sum(P.map(r=>r.irw||0));return `<p class="note" style="margin-top:10px">${esc(t('ir.tax',{nb,nn}))}${ps+irw>0.004?' '+esc(t('ir.taxPs',{v:moneyT(ps+irw,2)})):''}${w>0.004?' '+esc(t('ir.taxW',{v:moneyT(w,2)})):''}</p>`})()}
   <p class="note" style="margin-top:10px">${esc(t('tf.note',{p:numT(psYear(y),1)}))}${att?' '+esc(t('tf.attached')):''}</p></div>`;
 }
 EXT.A.taxY=v=>{S.ui.taxY=+v;render()};

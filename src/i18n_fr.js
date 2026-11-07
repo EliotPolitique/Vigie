@@ -2497,5 +2497,16 @@ boot:'Ouverture de ton espace…',noData:'Pas encore de données',
 "rs.undo":"Annuler la réinitialisation",
 "rs.undoConfirm":"Confirmer l'annulation",
 "rs.undone":"Compte remis comme avant",
-"rs.undoNone":"Aucune copie d'annulation pour ce compte"
+"rs.undoNone":"Aucune copie d'annulation pour ce compte",
+"ir.txL":"Intérêts {b} (rapport)",
+"ir.done":"{n} rapport(s) de revenus lu(s) : {u} opération(s) complétée(s) (brut, prélèvements), {a} ajoutée(s), {w} en attente de l’opération correspondante.",
+"ir.brut":"brut {v}",
+"ir.ret":"retenues {v}",
+"ir.rate":"taux {r} %",
+"ir.sum":"D’après {n} rapport(s) sur {all} revenus : {b} bruts, {net} nets, dont {ps} de prélèvements sociaux retenus à la source.",
+"ir.sumW":"Impôt retenu à l’étranger : {w}.",
+"ir.tax":"Montants bruts pour {nb} revenu(s) (d’après les rapports de l’établissement) ; {nn} autre(s) connu(s) seulement en net, à compléter avec l’IFU.",
+"ir.taxPs":"Déjà prélevé à la source : {v}.",
+"ir.taxW":"Impôt retenu à l’étranger : {v} (crédit d’impôt éventuel, à vérifier sur l’IFU).",
+"ir.intN":"Intérêts du compte {a}"
 };

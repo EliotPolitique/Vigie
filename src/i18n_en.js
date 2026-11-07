@@ -2496,5 +2496,16 @@ boot:'Opening your space…',noData:'No data yet',
 "rs.undo":"Undo the reset",
 "rs.undoConfirm":"Confirm undo",
 "rs.undone":"Account restored",
-"rs.undoNone":"No undo copy for this account"
+"rs.undoNone":"No undo copy for this account",
+"ir.txL":"{b} interest (report)",
+"ir.done":"{n} income report(s) read: {u} transaction(s) completed (gross, withholdings), {a} added, {w} waiting for the matching transaction.",
+"ir.brut":"gross {v}",
+"ir.ret":"withheld {v}",
+"ir.rate":"rate {r}%",
+"ir.sum":"From {n} report(s) out of {all} payments: {b} gross, {net} net, including {ps} of social charges withheld at source.",
+"ir.sumW":"Foreign tax withheld: {w}.",
+"ir.tax":"Gross amounts for {nb} payment(s) (from the institution’s reports); {nn} other(s) known only net, to complete from the annual tax statement.",
+"ir.taxPs":"Already withheld at source: {v}.",
+"ir.taxW":"Foreign tax withheld: {v} (possible tax credit, check the annual tax statement).",
+"ir.intN":"{a} account interest"
 };

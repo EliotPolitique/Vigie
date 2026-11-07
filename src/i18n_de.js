@@ -2496,5 +2496,16 @@ boot:'Dein Bereich wird geöffnet …',noData:'Noch keine Daten',
 "rs.undo":"Zurücksetzen rückgängig machen",
 "rs.undoConfirm":"Rückgängig bestätigen",
 "rs.undone":"Konto wiederhergestellt",
-"rs.undoNone":"Keine Rückgängig-Kopie für dieses Konto"
+"rs.undoNone":"Keine Rückgängig-Kopie für dieses Konto",
+"ir.txL":"{b} Zinsen (Bericht)",
+"ir.done":"{n} Ertragsbericht(e) gelesen: {u} Buchung(en) ergänzt (brutto, Abzüge), {a} hinzugefügt, {w} warten auf die passende Buchung.",
+"ir.brut":"brutto {v}",
+"ir.ret":"Abzüge {v}",
+"ir.rate":"Zins {r} %",
+"ir.sum":"Laut {n} Bericht(en) von {all} Erträgen: {b} brutto, {net} netto, davon {ps} an der Quelle einbehaltene Sozialabgaben.",
+"ir.sumW":"Im Ausland einbehaltene Steuer: {w}.",
+"ir.tax":"Bruttobeträge für {nb} Ertrag/Erträge (laut Berichten des Instituts); {nn} weitere nur netto bekannt, mit der Jahressteuerbescheinigung ergänzen.",
+"ir.taxPs":"Bereits an der Quelle einbehalten: {v}.",
+"ir.taxW":"Im Ausland einbehaltene Steuer: {v} (mögliche Steuergutschrift, in der Steuerbescheinigung prüfen).",
+"ir.intN":"Zinsen Konto {a}"
 };

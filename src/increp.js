@@ -47,7 +47,7 @@ function incParse(text,name){
 
 /* ---------- rapprochement avec les opérations de Vigie ---------- */
 const incKey=r=>r.k+'|'+r.d+'|'+r.n.toFixed(2)+'|'+(r.isin||'');
-const incCfg=()=>{const s=ST();if(!s.incRep||typeof s.incRep!=='object')s.incRep={};const c=s.incRep;if(!Array.isArray(c.wait))c.wait=[];if(!Array.isArray(c.miss))c.miss=[];delete c.done;return c};
+const incCfg=(s=ST())=>{if(!s.incRep||typeof s.incRep!=='object')s.incRep={};const c=s.incRep;if(!Array.isArray(c.wait))c.wait=[];if(!Array.isArray(c.miss))c.miss=[];delete c.done;return c};
 const incSlim=r=>{const o={b:r.b,ps:r.ps,ir:r.ir,w:r.w,n:r.n,doc:r.doc};if(r.rt&&r.rt.length)o.rt=r.rt;if(r.per)o.per=r.per;if(r.fx)o.fx=r.fx;if(r.c0&&r.c0!=='EUR'){o.c0=r.c0;o.g0=r.g0}if(r.qty)o.q=r.qty;if(r.unit)o.u=r.unit;return o};
 function incCashAcc(bank){const re=new RegExp(bank.replace(/\s+/g,' ?'),'i');return D().accounts.find(a=>(a.type==='checking'||a.type==='savings')&&re.test((a.inst||'')+' '+a.name)&&!isClosed(a))||D().accounts.find(a=>(a.type==='checking'||a.type==='savings')&&re.test((a.inst||'')+' '+a.name))}
 function incMatch(r){
@@ -90,7 +90,8 @@ const INC_CACHE=new WeakMap();
 /* ---------- textes transmis par la tâche mensuelle (patch.incTxt) ---------- */
 /* lus tout de suite et mis en attente dans les réglages (le document patch est supprimé une seconde après l'ouverture), puis rapprochés */
 EXT.boot.push(d=>{if(S.demo)return;const L=STORE.incPend;STORE.incPend=null;let n=0;
-  if(Array.isArray(L)&&L.length){const C=incCfg();const ks=new Set(C.wait.map(incKey));L.forEach(x=>{try{const r=incParse(x.t,x.n);if(r&&!ks.has(incKey(r))){C.wait.push(r);ks.add(incKey(r));n++}}catch(e){}})}
+  /* au démarrage, S.data n'est pas encore défini : on travaille sur les réglages du document qui se charge */
+  if(Array.isArray(L)&&L.length){const C=incCfg(d.settings);const ks=new Set(C.wait.map(incKey));L.forEach(x=>{try{const r=incParse(x.t,x.n);if(r&&!ks.has(incKey(r))){C.wait.push(r);ks.add(incKey(r));n++}}catch(e){}})}
   setTimeout(()=>{if(S.data!==d)return;const C=incCfg();if(!C.wait.length)return;
     try{const r=incApply([]);save();if(n||r.upd||r.add)toast(t('ir.done',{n:n||r.upd+r.add,u:r.upd+r.same,a:r.add,w:r.wait}))}catch(e){console.error(e)}},4000)});
 

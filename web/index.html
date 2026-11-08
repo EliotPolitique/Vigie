@@ -43600,14 +43600,20 @@ function envView(){
   const accs=envAccs(k);const val=sum(accs.map(accValue));const tt=totals();
   const perf=accs.map(a=>accPerf(a)).filter(Boolean);
   const hold=accs.filter(a=>(TYP[a.type]||{}).h);const hv=sum(hold.map(a=>sum(a.holdings.map(h=>hVal(h,a))))),hc=sum(hold.map(a=>sum(a.holdings.map(h=>hCost(h,a)))));
-  const net=perf.length?sum(perf.map(p=>p.net)):null;const gain=net!=null?val-net:hv-hc;const inc=perf.length?sum(perf.map(p=>p.inc)):null;
+  /* même règle que l'écran Performance : un compte aux espèces partagées (compte-titres Trade Republic) a pour versé net achats − ventes,
+     et ses dividendes, versés sur le compte espèces, s'ajoutent au gain */
+  const PR=(()=>{try{return perfModel().rows.filter(r=>accs.some(a=>a.id===r.a.id))}catch(e){return []}})();const hist=PR.filter(r=>r.hasHist);
+  const shared=hist.some(r=>r.kind==='trade');
+  const net=hist.length?sum(PR.map(r=>r.net)):(perf.length?sum(perf.map(p=>p.net)):null);
+  const gain=net!=null?val-net+sum(PR.filter(r=>r.kind==='trade').map(r=>r.inc)):hv-hc;
+  const inc=hist.length?sum(hist.map(r=>r.inc)):(perf.length?sum(perf.map(p=>p.inc)):null);
   const dca=(typeof dcaDetect==='function'?dcaDetect():[]).filter(x=>accs.some(a=>a.id===x.a.id));
   /* versements mensuels sur 12 mois, à partir du journal d'opérations */
   const ms=rangeMonths(12);const ops=accs.flatMap(a=>iopsOf(a.id));
   const dep=ms.map(m=>sum(ops.filter(o=>o.d.slice(0,7)===m&&o.t==='dep').map(iopNet))-sum(ops.filter(o=>o.d.slice(0,7)===m&&o.t==='wd').map(o=>-iopNet(o))));
   const buys=ms.map(m=>sum(ops.filter(o=>o.d.slice(0,7)===m&&o.t==='buy').map(o=>Math.abs(+o.amt||0)+(+o.fee||0))));
   const hasOps=ops.length>0;
-  const head=`${envChips(k)}<div class="kpis k4" style="margin-bottom:16px">${kpi(t('env.value'),money(val,0),t('env.share',{p:pctT(tt.gross?val/tt.gross:0,1)}))}${kpi(t('env.net'),net!=null?money(net,0):'—',net!=null?t('env.netS'):t('env.netNo'))}${kpi(t('env.gain'),`<span class="${cls(gain)}">${moneyS(gain,0)}</span>`,net?`<span class="${cls(gain)}">${pctS(gain/net)}</span>`:(hc?`<span class="${cls(gain)}">${pctS(gain/hc)}</span>`:''))}${kpi(t('env.inc'),inc!=null?money(inc,2):'—',t('env.incS'))}</div>`;
+  const head=`${envChips(k)}<div class="kpis k4" style="margin-bottom:16px">${kpi(t('env.value'),money(val,0),t('env.share',{p:pctT(tt.gross?val/tt.gross:0,1)}))}${kpi(t('env.net'),net!=null?money(net,0):'—',net!=null?(shared?t('pf2.trade'):t('env.netS')):t('env.netNo'))}${kpi(t('env.gain'),`<span class="${cls(gain)}">${moneyS(gain,0)}</span>`,net>0?`<span class="${cls(gain)}">${pctS(gain/net)}</span>`:(hc?`<span class="${cls(gain)}">${pctS(gain/hc)}</span>`:''))}${kpi(t('env.inc'),inc!=null?money(inc,2):'—',t('env.incS'))}</div>`;
   const accCards=`<div class="card"><div class="ch"><div><h2>${esc(t('env.accs',{n:accs.length}))}</h2></div><button class="btn sec sm" data-a="addAcc" data-v="${ENV[k].types[0]}">${ico('plus')}${esc(t('w.add'))}</button></div><div class="list">${accs.map(a=>{const P=accPerf(a);const ds=dca.filter(x=>x.a.id===a.id);return `<button class="row btnrow" data-a="acc" data-v="${a.id}">${accAvatar(a,true)}<div class="m"><b>${esc(a.name)}</b><span>${esc([typL(a.type),a.inst,ds.length?t('env.dca',{v:moneyT(sum(ds.map(x=>x.plan)),0),d:ds[0].day}):''].filter(Boolean).join(' · '))}</span></div><div class="r"><b>${money(accValue(a),2)}</b>${P?`<span class="${cls(P.total)}">${moneyS(P.total,2)}</span>`:''}</div></button>`}).join('')}</div></div>`;
   const flow=hasOps?`<div class="card"><div class="ch"><div><h2>${esc(t('env.flowT'))}</h2><p>${esc(t('env.flowS'))}</p></div></div>${chart({type:'bars',h:190,groups:ms.map((m,i)=>({label:monthT(m,true),vals:[Math.max(0,dep[i]),buys[i]],title:monthT(m)+' · '+moneyT(dep[i],2)+' / '+moneyT(buys[i],2)})),keys:[{c:'var(--accent)'},{c:'var(--k3)'}],label:t('env.flowT')})}<div class="lgd2"><span><i style="background:var(--accent)"></i>${esc(t('env.dep'))}</span><span><i style="background:var(--k3)"></i>${esc(t('env.buys'))}</span></div>${dca.length?`<p class="note" style="margin-top:10px">${ico('spark')} ${esc(t('env.dcaL',{n:dca.length,v:moneyT(sum(dca.map(x=>x.plan)),0)}))}</p>`:''}</div>`:'';
   let detail='';
@@ -45446,7 +45452,7 @@ function incParse(text,name){
 
 /* ---------- rapprochement avec les opérations de Vigie ---------- */
 const incKey=r=>r.k+'|'+r.d+'|'+r.n.toFixed(2)+'|'+(r.isin||'');
-const incCfg=()=>{const s=ST();if(!s.incRep||typeof s.incRep!=='object')s.incRep={};const c=s.incRep;if(!Array.isArray(c.wait))c.wait=[];if(!Array.isArray(c.miss))c.miss=[];delete c.done;return c};
+const incCfg=(s=ST())=>{if(!s.incRep||typeof s.incRep!=='object')s.incRep={};const c=s.incRep;if(!Array.isArray(c.wait))c.wait=[];if(!Array.isArray(c.miss))c.miss=[];delete c.done;return c};
 const incSlim=r=>{const o={b:r.b,ps:r.ps,ir:r.ir,w:r.w,n:r.n,doc:r.doc};if(r.rt&&r.rt.length)o.rt=r.rt;if(r.per)o.per=r.per;if(r.fx)o.fx=r.fx;if(r.c0&&r.c0!=='EUR'){o.c0=r.c0;o.g0=r.g0}if(r.qty)o.q=r.qty;if(r.unit)o.u=r.unit;return o};
 function incCashAcc(bank){const re=new RegExp(bank.replace(/\s+/g,' ?'),'i');return D().accounts.find(a=>(a.type==='checking'||a.type==='savings')&&re.test((a.inst||'')+' '+a.name)&&!isClosed(a))||D().accounts.find(a=>(a.type==='checking'||a.type==='savings')&&re.test((a.inst||'')+' '+a.name))}
 function incMatch(r){
@@ -45489,7 +45495,8 @@ const INC_CACHE=new WeakMap();
 /* ---------- textes transmis par la tâche mensuelle (patch.incTxt) ---------- */
 /* lus tout de suite et mis en attente dans les réglages (le document patch est supprimé une seconde après l'ouverture), puis rapprochés */
 EXT.boot.push(d=>{if(S.demo)return;const L=STORE.incPend;STORE.incPend=null;let n=0;
-  if(Array.isArray(L)&&L.length){const C=incCfg();const ks=new Set(C.wait.map(incKey));L.forEach(x=>{try{const r=incParse(x.t,x.n);if(r&&!ks.has(incKey(r))){C.wait.push(r);ks.add(incKey(r));n++}}catch(e){}})}
+  /* au démarrage, S.data n'est pas encore défini : on travaille sur les réglages du document qui se charge */
+  if(Array.isArray(L)&&L.length){const C=incCfg(d.settings);const ks=new Set(C.wait.map(incKey));L.forEach(x=>{try{const r=incParse(x.t,x.n);if(r&&!ks.has(incKey(r))){C.wait.push(r);ks.add(incKey(r));n++}}catch(e){}})}
   setTimeout(()=>{if(S.data!==d)return;const C=incCfg();if(!C.wait.length)return;
     try{const r=incApply([]);save();if(n||r.upd||r.add)toast(t('ir.done',{n:n||r.upd+r.add,u:r.upd+r.same,a:r.add,w:r.wait}))}catch(e){console.error(e)}},4000)});
 

@@ -22,6 +22,14 @@ function installer() {
   try { alertesDividendes(); } catch (e) { Logger.log('Dividendes : ' + e.message); }
 }
 
+/* uniquement les alertes de dividendes (si tu utilises la version Claude de Vigie, qui a déjà ses propres tâches de bilan et d'alertes de cours) */
+function installerDividendes() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'alertesDividendes').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('alertesDividendes').timeBased().everyDays(1).atHour(8).inTimezone('Europe/Paris').create();
+  alertesDividendes();
+  Logger.log('Alertes de dividendes installées : chaque matin vers 8 h.');
+}
+
 /* ---------- lecture des données ---------- */
 function syncFile_() {
   const it = DriveApp.getFilesByName(SYNC_NAME);

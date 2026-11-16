@@ -2532,5 +2532,7 @@ boot:'Ouverture de ton espace…',noData:'Pas encore de données',
 "dc.wEx":"Détachement aujourd’hui : {n}",
 "dc.wPay":"Versement aujourd’hui : {n}",
 "dc.nEx":"Détachement aujourd’hui — {n}",
-"dc.nPay":"Versement aujourd’hui — {n}"
+"dc.nPay":"Versement aujourd’hui — {n}",
+"na.added":"Cours en direct ajouté pour {n} nouvelle(s) position(s) : {l}. Il s’affiche d’ici une minute.",
+"na.pend":"Fiche de dividendes en préparation pour {l} : la tâche « Vigie · nouvelles positions » la crée dans les deux heures."
 };

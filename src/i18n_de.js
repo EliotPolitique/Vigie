@@ -2531,5 +2531,7 @@ boot:'Dein Bereich wird geöffnet …',noData:'Noch keine Daten',
 "dc.wEx":"Heute Ex-Tag: {n}",
 "dc.wPay":"Heute Zahlung: {n}",
 "dc.nEx":"Heute Ex-Tag — {n}",
-"dc.nPay":"Heute Zahlung — {n}"
+"dc.nPay":"Heute Zahlung — {n}",
+"na.added":"Live-Kurs für {n} neue Position(en) hinzugefügt: {l}. Er erscheint in etwa einer Minute.",
+"na.pend":"Dividendenblatt für {l} in Vorbereitung: die Aufgabe „Vigie · neue Positionen“ erstellt es innerhalb von zwei Stunden."
 };

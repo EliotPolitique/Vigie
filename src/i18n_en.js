@@ -2531,5 +2531,7 @@ boot:'Opening your space…',noData:'No data yet',
 "dc.wEx":"Ex-dividend today: {n}",
 "dc.wPay":"Payment today: {n}",
 "dc.nEx":"Ex-dividend today — {n}",
-"dc.nPay":"Payment today — {n}"
+"dc.nPay":"Payment today — {n}",
+"na.added":"Live price added for {n} new position(s): {l}. It will show within a minute.",
+"na.pend":"Dividend sheet being prepared for {l}: the “Vigie · new positions” task creates it within two hours."
 };

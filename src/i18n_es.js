@@ -2531,5 +2531,7 @@ boot:'Abriendo tu espacio…',noData:'Aún no hay datos',
 "dc.wEx":"Ex-dividendo hoy: {n}",
 "dc.wPay":"Pago hoy: {n}",
 "dc.nEx":"Ex-dividendo hoy — {n}",
-"dc.nPay":"Pago hoy — {n}"
+"dc.nPay":"Pago hoy — {n}",
+"na.added":"Cotización en directo añadida para {n} posición(es) nueva(s): {l}. Aparecerá en un minuto.",
+"na.pend":"Ficha de dividendos en preparación para {l}: la tarea «Vigie · nuevas posiciones» la crea en dos horas."
 };

@@ -969,6 +969,18 @@ input,select,textarea{border-radius:7px}
 :root[data-fs="l"]{--side:274px}
 :root[data-fs="s"]{--side:230px}
 @media (max-width:560px){.skgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.skp{height:78px;padding:8px}.skside{width:22px}.skmain b{font-size:15px}.skt{padding:8px 10px 10px}.skt span{font-size:11.5px}}
+
+/* V5.5 — échelle des revenus passifs */
+.pgl{display:flex;flex-direction:column;position:relative;padding-left:4px}
+.pgl:before{content:"";position:absolute;left:17px;top:14px;bottom:14px;width:2px;background:var(--line,#e5e7eb)}
+.pgr{display:flex;align-items:center;gap:12px;padding:7px 0;position:relative}
+.pgr .m{flex:1;min-width:0;display:flex;flex-direction:column}.pgr .m b{font-weight:600;font-size:13.5px}.pgr .m span{font-size:12px;color:var(--muted)}
+.pgr .r{font:600 13px var(--mono,ui-monospace);white-space:nowrap;color:var(--muted)}
+.pgd{width:28px;height:28px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--surface,#fff);border:2px solid var(--c);color:var(--c);z-index:1}
+.pgd svg{width:14px;height:14px}
+.pgr.done .pgd{background:var(--c);color:#fff}.pgr.done .r{color:var(--good)}
+.pgr.cur{background:color-mix(in srgb,var(--accent) 8%,transparent);border-radius:10px;margin:2px -8px;padding:9px 8px}.pgr.cur .r{color:var(--accent)}.pgr.cur .pgd{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 20%,transparent)}
+.pgr.next{opacity:.7}.pgr.top .m b{color:var(--warn)}
 </style></head><body>
 <div id="app"></div>
 <div id="ovl" class="ovl" hidden></div>
@@ -4281,7 +4293,31 @@ boot:'Ouverture de ton espace…',noData:'Pas encore de données',
 "dc.nEx":"Détachement aujourd’hui — {n}",
 "dc.nPay":"Versement aujourd’hui — {n}",
 "na.added":"Cours en direct ajouté pour {n} nouvelle(s) position(s) : {l}. Il s’affiche d’ici une minute.",
-"na.pend":"Fiche de dividendes en préparation pour {l} : la tâche « Vigie · nouvelles positions » la crée dans les deux heures."
+"na.pend":"Fiche de dividendes en préparation pour {l} : la tâche « Vigie · nouvelles positions » la crée dans les deux heures.",
+"pg.title":"Objectif revenus passifs",
+"pg.sub":"Tout ce que tes placements te rapportent (estimation brute) — paliers de 10 €, jusqu’à la liberté financière",
+"pg.p.year":"Annuel",
+"pg.p.half":"Semestriel",
+"pg.p.quarter":"Trimestriel",
+"pg.p.month":"Mensuel",
+"pg.u.year":"par an",
+"pg.u.half":"par semestre",
+"pg.u.quarter":"par trimestre",
+"pg.u.month":"par mois",
+"pg.of":"palier visé : {v} {p}",
+"pg.toStep":"du chemin vers {v}",
+"pg.step":"Palier {v} {p}",
+"pg.done":"atteint le {d}",
+"pg.missing":"il manque {v}",
+"pg.cap":"≈ {v} à placer au rendement actuel ({y})",
+"pg.cover":"« {c} » couvert par tes placements",
+"pg.coverS":"cumul {v} {p} (ce poste : {o})",
+"pg.free":"Liberté financière",
+"pg.freeS":"tes revenus passifs couvrent toutes tes dépenses ({v} {p})",
+"pg.freeBar":"Chemin vers la liberté financière",
+"pg.note":"Estimation brute d’après tes positions actuelles. Réellement reçus sur 12 mois : {r} {p}. Dépenses : moyenne de tes 12 derniers mois.",
+"pg.nT":"Palier atteint : {v} {p} de revenus passifs",
+"pg.nB":"Prochain palier : {n} {p}."
 };
 
 I18N.en={
@@ -6819,7 +6855,31 @@ boot:'Opening your space…',noData:'No data yet',
 "dc.nEx":"Ex-dividend today — {n}",
 "dc.nPay":"Payment today — {n}",
 "na.added":"Live price added for {n} new position(s): {l}. It will show within a minute.",
-"na.pend":"Dividend sheet being prepared for {l}: the “Vigie · new positions” task creates it within two hours."
+"na.pend":"Dividend sheet being prepared for {l}: the “Vigie · new positions” task creates it within two hours.",
+"pg.title":"Passive income goal",
+"pg.sub":"Everything your investments earn (gross estimate) — 10 € steps, up to financial freedom",
+"pg.p.year":"Yearly",
+"pg.p.half":"Half-yearly",
+"pg.p.quarter":"Quarterly",
+"pg.p.month":"Monthly",
+"pg.u.year":"per year",
+"pg.u.half":"per half-year",
+"pg.u.quarter":"per quarter",
+"pg.u.month":"per month",
+"pg.of":"next step: {v} {p}",
+"pg.toStep":"of the way to {v}",
+"pg.step":"Step {v} {p}",
+"pg.done":"reached on {d}",
+"pg.missing":"{v} to go",
+"pg.cap":"≈ {v} to invest at the current yield ({y})",
+"pg.cover":"“{c}” covered by your investments",
+"pg.coverS":"cumulative {v} {p} (this item: {o})",
+"pg.free":"Financial freedom",
+"pg.freeS":"your passive income covers all your spending ({v} {p})",
+"pg.freeBar":"Path to financial freedom",
+"pg.note":"Gross estimate from your current positions. Actually received over 12 months: {r} {p}. Spending: average of your last 12 months.",
+"pg.nT":"Step reached: {v} {p} of passive income",
+"pg.nB":"Next step: {n} {p}."
 };
 
 I18N.es={
@@ -9357,7 +9417,31 @@ boot:'Abriendo tu espacio…',noData:'Aún no hay datos',
 "dc.nEx":"Ex-dividendo hoy — {n}",
 "dc.nPay":"Pago hoy — {n}",
 "na.added":"Cotización en directo añadida para {n} posición(es) nueva(s): {l}. Aparecerá en un minuto.",
-"na.pend":"Ficha de dividendos en preparación para {l}: la tarea «Vigie · nuevas posiciones» la crea en dos horas."
+"na.pend":"Ficha de dividendos en preparación para {l}: la tarea «Vigie · nuevas posiciones» la crea en dos horas.",
+"pg.title":"Objetivo de ingresos pasivos",
+"pg.sub":"Todo lo que rinden tus inversiones (estimación bruta) — escalones de 10 €, hasta la libertad financiera",
+"pg.p.year":"Anual",
+"pg.p.half":"Semestral",
+"pg.p.quarter":"Trimestral",
+"pg.p.month":"Mensual",
+"pg.u.year":"al año",
+"pg.u.half":"por semestre",
+"pg.u.quarter":"por trimestre",
+"pg.u.month":"al mes",
+"pg.of":"siguiente escalón: {v} {p}",
+"pg.toStep":"del camino hasta {v}",
+"pg.step":"Escalón {v} {p}",
+"pg.done":"alcanzado el {d}",
+"pg.missing":"faltan {v}",
+"pg.cap":"≈ {v} a invertir al rendimiento actual ({y})",
+"pg.cover":"«{c}» cubierto por tus inversiones",
+"pg.coverS":"acumulado {v} {p} (esta partida: {o})",
+"pg.free":"Libertad financiera",
+"pg.freeS":"tus ingresos pasivos cubren todos tus gastos ({v} {p})",
+"pg.freeBar":"Camino a la libertad financiera",
+"pg.note":"Estimación bruta según tus posiciones actuales. Cobrado en 12 meses: {r} {p}. Gastos: media de tus últimos 12 meses.",
+"pg.nT":"Escalón alcanzado: {v} {p} de ingresos pasivos",
+"pg.nB":"Siguiente escalón: {n} {p}."
 };
 
 I18N.de={
@@ -11895,7 +11979,31 @@ boot:'Dein Bereich wird geöffnet …',noData:'Noch keine Daten',
 "dc.nEx":"Heute Ex-Tag — {n}",
 "dc.nPay":"Heute Zahlung — {n}",
 "na.added":"Live-Kurs für {n} neue Position(en) hinzugefügt: {l}. Er erscheint in etwa einer Minute.",
-"na.pend":"Dividendenblatt für {l} in Vorbereitung: die Aufgabe „Vigie · neue Positionen“ erstellt es innerhalb von zwei Stunden."
+"na.pend":"Dividendenblatt für {l} in Vorbereitung: die Aufgabe „Vigie · neue Positionen“ erstellt es innerhalb von zwei Stunden.",
+"pg.title":"Ziel passives Einkommen",
+"pg.sub":"Alles, was deine Anlagen abwerfen (Bruttoschätzung) — 10-€-Stufen bis zur finanziellen Freiheit",
+"pg.p.year":"Jährlich",
+"pg.p.half":"Halbjährlich",
+"pg.p.quarter":"Vierteljährlich",
+"pg.p.month":"Monatlich",
+"pg.u.year":"pro Jahr",
+"pg.u.half":"pro Halbjahr",
+"pg.u.quarter":"pro Quartal",
+"pg.u.month":"pro Monat",
+"pg.of":"nächste Stufe: {v} {p}",
+"pg.toStep":"des Wegs bis {v}",
+"pg.step":"Stufe {v} {p}",
+"pg.done":"erreicht am {d}",
+"pg.missing":"es fehlen {v}",
+"pg.cap":"≈ {v} zu investieren bei aktueller Rendite ({y})",
+"pg.cover":"„{c}“ von deinen Anlagen gedeckt",
+"pg.coverS":"kumuliert {v} {p} (dieser Posten: {o})",
+"pg.free":"Finanzielle Freiheit",
+"pg.freeS":"dein passives Einkommen deckt alle Ausgaben ({v} {p})",
+"pg.freeBar":"Weg zur finanziellen Freiheit",
+"pg.note":"Bruttoschätzung nach deinen aktuellen Positionen. Tatsächlich erhalten in 12 Monaten: {r} {p}. Ausgaben: Durchschnitt der letzten 12 Monate.",
+"pg.nT":"Stufe erreicht: {v} {p} passives Einkommen",
+"pg.nB":"Nächste Stufe: {n} {p}."
 };
 
 I18N["it"]={
@@ -45758,6 +45866,62 @@ function naPending(){const out=[];invAccs().filter(a=>!isClosed(a)).forEach(a=>(
   return html.replace('<div class="kpis"',note+'<div class="kpis"')}catch(e){return html}}}
 /* monogramme : un symbole de place commençant par un chiffre (2AR à Francfort) n'est pas parlant → initiales du nom */
 {const _ha=holdAvatar;holdAvatar=function(h,cls){if(h&&h.ticker&&/^\d/.test(h.ticker))h=Object.assign({},h,{ticker:''});return _ha(h,cls)}}
+
+/* ================= V5.5 — objectif « revenus passifs » =================
+   Jauge des revenus passifs estimés (dividendes, coupons, intérêts des livrets et du compte espèces,
+   fonds euros, loyers, financement participatif… : tout ce que compte passiveIncome()), exprimés par an,
+   semestre, trimestre ou mois. Paliers de 10 € : dès qu'un palier est atteint, la jauge passe au suivant.
+   Échelle jusqu'à la liberté financière : tes dépenses réelles (12 derniers mois) couvertes poste par poste,
+   du plus petit au plus gros, jusqu'à 100 % de tes dépenses. */
+const PIG_PER={year:12,half:6,quarter:3,month:1},PIG_STEP=10;
+const pgCfg=()=>{const s=ST();if(!s.pig||typeof s.pig!=='object')s.pig={};const c=s.pig;if(!PIG_PER[c.per])c.per='month';if(!c.hist||typeof c.hist!=='object')c.hist={};return c};
+/* dépenses mensuelles moyennes par poste, sur les 12 derniers mois complets */
+function pgSpend(){const end=today().slice(0,7);const ms=[];for(let i=1;i<=12;i++)ms.push(ymAdd(end,-i));
+  const list=D().txs.filter(x=>ms.includes(ymOf(x.d)));const nm=Math.max(1,new Set(list.map(x=>ymOf(x.d))).size);
+  const cs=catSpend(list);return Object.entries(cs).map(([k,e])=>({k,v:e.v/nm})).filter(x=>x.v>0.5).sort((a,b)=>a.v-b.v)}
+function pgModel(){const C=pgCfg();const f=PIG_PER[C.per];const pi=passiveIncome();
+  const cur=pi.total*f/12;const rec=(()=>{try{const r=incomeReceived();return (r.total||0)*f/12}catch(e){return null}})();
+  const sp=pgSpend();const free=sum(sp.map(x=>x.v))*f;
+  const lvl=Math.floor(cur/PIG_STEP+1e-9)*PIG_STEP,target=lvl+PIG_STEP,inStep=(cur-lvl)/PIG_STEP;
+  /* rendement moyen des placements qui rapportent, pour traduire l'écart en capital à investir */
+  /* rendement moyen des seuls placements qui rapportent (lignes de passiveIncome), pour traduire l'écart en capital à investir */
+  const base=sum(pi.lines.map(l=>{try{return l.h?hVal(l.h,l.acc):accGross(l.acc)}catch(e){return 0}}));
+  const yld=base>0?pi.total/base:0;const gap=target-cur;const capGap=yld>0?gap*12/f/yld:null;
+  let acc=0;const rungs=sp.map(x=>{acc+=x.v*f;return {k:x.k,v:acc,own:x.v*f}}).filter(r=>r.k!=='uncat'&&r.k!=='otherOut');
+  return {per:C.per,f,cur,rec,lvl,target,inStep,free,freePct:free>0?cur/free:0,yld,capGap,gap,rungs,pi}}
+/* paliers franchis : date du premier passage, notification la première fois */
+function pgCheck(){if(!S.data||S.demo)return;const C=pgCfg();let M;try{M=pgModel()}catch(e){return}const H=C.hist[C.per]=C.hist[C.per]||{};let ch=false;const first=!Object.keys(H).length;
+  for(let v=PIG_STEP;v<=M.lvl&&v<=100000;v+=PIG_STEP)if(!H[v]){H[v]=today();ch=true;if(!first&&v===M.lvl)pushNotif('badge',t('pg.nT',{v:moneyT(v,0),p:t('pg.u.'+C.per)}),t('pg.nB',{n:moneyT(v+PIG_STEP,0),p:t('pg.u.'+C.per)}),'go','goals')}
+  if(ch)save()}
+EXT.A.pigPer=v=>{if(!PIG_PER[v])return;pgCfg().per=v;save();pgCheck();render()};
+function pgGauge(p,label,sub){const R=86,cx=110,cy=100,a0=Math.PI,a1=a0+Math.PI*clamp(p,0,1);const pt=a=>[cx+R*Math.cos(a),cy+R*Math.sin(a)];
+  const [x0,y0]=pt(a0),[x1,y1]=pt(a1),[xe,ye]=pt(2*Math.PI);
+  return `<svg viewBox="0 0 220 132" style="width:100%;max-width:300px;display:block;margin:0 auto" role="img" aria-label="${esc(label)}">
+    <path d="M${x0} ${y0} A${R} ${R} 0 0 1 ${xe} ${ye}" fill="none" stroke="var(--surface3,#e5e7eb)" stroke-width="16" stroke-linecap="round"/>
+    ${p>0.002?`<path d="M${x0} ${y0} A${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}" fill="none" stroke="var(--good)" stroke-width="16" stroke-linecap="round"/>`:''}
+    <text x="${cx}" y="${cy-12}" text-anchor="middle" style="font:700 28px var(--display,Inter);fill:var(--text)">${esc(label)}</text>
+    <text x="${cx}" y="${cy+26}" text-anchor="middle" style="font:500 12px Inter;fill:var(--muted)">${esc(sub)}</text></svg>`}
+function pgCardHTML(){let M;try{M=pgModel()}catch(e){return ''}const C=pgCfg();const H=C.hist[C.per]||{};const u=t('pg.u.'+C.per);const mt=v=>moneyT(v,v<100?2:0);
+  const chips=seg('pigPer',Object.keys(PIG_PER).map(k=>[k,t('pg.p.'+k)]),C.per,t('pg.title'));
+  /* échelle : paliers franchis récents, palier visé, paliers suivants, postes de dépenses couverts, liberté financière */
+  const R=[];Object.keys(H).map(Number).sort((a,b)=>b-a).slice(0,3).forEach(v=>R.push({v,l:t('pg.step',{v:moneyT(v,0),p:u}),s:t('pg.done',{d:dateT(H[v])}),st:'done'}));
+  R.push({v:M.target,l:t('pg.step',{v:moneyT(M.target,0),p:u}),s:t('pg.missing',{v:mt(M.gap)})+(M.capGap?' · '+t('pg.cap',{v:moneyT(M.capGap,0),y:pctT(M.yld,1)}):''),st:'cur'});
+  for(let i=1;i<=2;i++)R.push({v:M.target+PIG_STEP*i,l:t('pg.step',{v:moneyT(M.target+PIG_STEP*i,0),p:u}),st:'next'});
+  M.rungs.forEach((r,i)=>{if(i===M.rungs.length-1)return;R.push({v:r.v,l:t('pg.cover',{c:catL(r.k)}),s:t('pg.coverS',{v:mt(r.v),o:mt(r.own),p:u}),st:M.cur>=r.v?'done':'goal',ic:(CAT[r.k]||{}).ic})});
+  if(M.free>0)R.push({v:M.free,l:t('pg.free'),s:t('pg.freeS',{v:mt(M.free),p:u}),st:M.cur>=M.free?'done':'top'});
+  R.sort((a,b)=>b.v-a.v);
+  const col={done:'var(--good)',cur:'var(--accent)',next:'var(--muted)',goal:'var(--k3)',top:'var(--warn)'};
+  const ladder=`<div class="pgl">${R.map(r=>`<div class="pgr ${r.st}"><span class="pgd" style="--c:${col[r.st]}">${r.st==='done'?ico('check'):r.st==='top'?ico('spark'):r.ic?ico(r.ic):''}</span><div class="m"><b>${esc(r.l)}</b>${r.s?`<span>${esc(r.s)}</span>`:''}</div><div class="r">${esc(mt(r.v))}</div></div>`).join('')}</div>`;
+  return `<div class="card" style="margin-bottom:16px"><div class="ch" style="flex-wrap:wrap;gap:10px"><div><h2>${ico('coins')} ${esc(t('pg.title'))}</h2><p>${esc(t('pg.sub'))}</p></div>${chips}</div>
+   <div class="grid g2" style="align-items:start">
+    <div>${pgGauge(M.inStep,mt(M.cur),t('pg.of',{v:moneyT(M.target,0),p:u}))}
+      <div style="text-align:center;margin-top:6px"><b>${esc(pctT(M.inStep,0))}</b> <span class="muted">${esc(t('pg.toStep',{v:moneyT(M.target,0)}))}</span></div>
+      <div style="margin-top:16px"><div class="hrow" style="justify-content:space-between"><span class="muted">${esc(t('pg.freeBar'))}</span><b>${esc(pctT(M.freePct,1))}</b></div>
+        <div class="bar" style="height:10px;border-radius:6px;background:var(--surface3,#e5e7eb);overflow:hidden;margin-top:6px"><i style="display:block;height:100%;width:${(clamp(M.freePct,0,1)*100).toFixed(2)}%;background:var(--good)"></i></div>
+        <p class="note" style="margin-top:8px">${esc(t('pg.note',{r:M.rec!=null?mt(M.rec):'—',p:u}))}</p></div></div>
+    <div>${ladder}</div></div></div>`}
+{const _gv=goalsView;goalsView=function(){try{pgCheck()}catch(e){}return pgCardHTML()+_gv()}}
+EXT.boot.push(d=>{setTimeout(()=>{if(S.data===d)try{pgCheck()}catch(e){}},12000)});
 
 /* ================= état ================= */
 const S={data:null,real:null,demo:false,phase:'boot',cap:{sample:undefined,downloads:undefined},

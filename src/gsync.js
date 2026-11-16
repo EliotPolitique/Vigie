@@ -114,7 +114,10 @@ function gsyOrdersApply(a,orders,rep){
   const ops=iopsOf(a.id);const last=ops.reduce((m,o)=>o.d>m?o.d:m,'');const from=last?dAdd(last,-10):'0000-00-00';let s0=Math.max(0,...ops.map(x=>+x.s||0));let n=0;
   orders.filter(o=>(o.t==='buy'||o.t==='sell')&&o.d>=from&&o.d<=today()).forEach(o=>{
     const isin=gsyIsin(a,o.n,o.g,ops);const nn=norm(o.n);
-    const twin=ops.find(x=>x.t===o.t&&Math.abs(daysBetween(x.d,o.d))<=3&&((isin&&x.isin===isin)||(!isin&&norm(x.n||'')===nn))&&Math.abs((+x.q||0)-o.q)<=Math.max(1e-6,o.q*0.005));if(twin)return;
+    /* jumeau : même sens, ±3 jours, même quantité, et même ISIN, même nom, ou même montant quand l'un des deux n'a pas encore d'ISIN
+       (une ligne lue avant que l'ISIN soit connu ne doit pas être réimportée une fois l'ISIN trouvé) */
+    const twin=ops.find(x=>x.t===o.t&&Math.abs(daysBetween(x.d,o.d))<=3&&Math.abs((+x.q||0)-o.q)<=Math.max(1e-6,o.q*0.005)&&((isin&&x.isin===isin)||norm(x.n||'')===nn||((!isin||!x.isin)&&Math.abs(Math.abs(+x.amt||0)-o.q*o.px)<=0.02)));
+    if(twin){if(isin&&!twin.isin)twin.isin=isin;return}
     const ext='gs:'+hash([a.id,o.d,o.t,isin||nn,o.q.toFixed(6)].join('|'));if(ops.some(x=>x.ext===ext))return;
     if(!isin&&!nn)return;
     const ref=ops.find(x=>isin&&x.isin===isin)||{};
@@ -127,7 +130,7 @@ function gsyPosApply(src,a,P,rep){
   const g=gsyCfg();const ops=iopsOf(a.id);const L=replayOps(ops);const mode=g.pru[a.id]||'ledger';const seen=new Set();const fx=ST().fx;const acur=a.cur||'EUR';
   P.pos.forEach(p=>{
     const isin=gsyIsin(a,p.n,p.g,ops);const sym=p.g?p.g.split(':').pop():'';
-    let h=pfMatch(a,{isin:isin||null,name:p.n,sym:sym||null});
+    let h=pfMatch(a,{isin:isin||null,name:p.n,sym:sym||null})||(p.g&&(a.holdings||[]).find(x=>String(x.gsym||'').toUpperCase()===String(p.g).toUpperCase()))||null;
     if(!h){const kind=/etf|tracker|fonds|fund/i.test(p.type)?'etf':/action|stock|share/i.test(p.type)?'stock':pfKind({name:p.n,isin,sym},{type:a.type});
       h={id:uid(),name:p.n,isin:isin||'',ticker:sym,gsym:p.g||'',kind,cur:acur,qty:0,price:isFinite(p.px)&&p.px>0?p.px:0,pru:0,ter:0,div:0,region:pfRegion({name:p.n,isin,sym},kind),sector:kind==='stock'?'other':'diversified',months:[],src:'gsheet'};a.holdings.push(h);rep.created.push(a.name+' · '+p.n)}
     seen.add(h.id);if(!h.isin&&isin)h.isin=isin;if(!h.gsym&&p.g)h.gsym=p.g;
@@ -238,3 +241,10 @@ EXT.V.sources=sourcesView;
 {const _wi=watchItems;watchItems=function(){const L=_wi();try{const g=gsyCfg();Object.keys(GSY.err).filter(k=>g.files[k]).forEach(k=>L.push({lvl:'warn',ic:'sheet',l:t('gsy.w',{s:t('gsy.src.'+k)}),s:gsyErrT(GSY.err[k]),act:'go',v:'sources',prio:6}));L.sort((a,b)=>b.prio-a.prio)}catch(e){}return L}}
 /* le contrôle « total Finary » n'a plus de sens dès qu'un compte a été détaché de Finary */
 {const _fc=finCheck;finCheck=function(){if(S.data&&D().accounts.some(a=>a.src==='gsheet'||(ST().finary&&Object.values(ST().finary.map||{}).includes('__skip')&&a.src)))return null;return _fc()}}
+
+/* réparation : ordre de la feuille importé deux fois (une fois sans ISIN, une fois avec) → on garde celui qui a l'ISIN */
+EXT.boot.push(d=>{const L=d.iops||[];if(!L.length)return;const drop=new Set();
+  L.forEach(o=>{if(o.src!=='gsheet'||o.isin||drop.has(o.id))return;
+    const t=L.find(x=>x!==o&&!drop.has(x.id)&&x.acc===o.acc&&x.t===o.t&&x.d===o.d&&x.isin&&Math.abs((+x.q||0)-(+o.q||0))<=1e-6&&Math.abs((+x.amt||0)-(+o.amt||0))<=0.02);
+    if(t)drop.add(o.id)});
+  if(drop.size)d.iops=L.filter(o=>!drop.has(o.id))});

@@ -3,7 +3,8 @@
  * Lit la copie de tes données que Vigie synchronise dans ton Drive (« vigie-donnees.json.gz ») et :
  *  - le 1er de chaque mois : t'envoie par e-mail le bilan du mois écoulé ;
  *  - chaque dimanche : garde une copie datée de tes données (8 dernières) dans « Vigie — sauvegardes » ;
- *  - les jours ouvrés vers 18 h : vérifie tes alertes de cours et les mouvements de ±5 % (cours lus dans ta feuille de cours).
+ *  - les jours ouvrés vers 18 h : vérifie tes alertes de cours et les mouvements de ±5 % (cours lus dans ta feuille de cours) ;
+ *  - chaque matin vers 8 h : détachements et versements de dividendes du jour → Telegram, ntfy et agenda Google « Vigie — dividendes ».
  * Installation : coller ce fichier dans un projet Apps Script, exécuter une fois installer(), accepter les autorisations.
  * Rien n'est modifié dans Vigie : ce script ne fait que lire tes données et t'écrire.
  */
@@ -16,7 +17,9 @@ function installer() {
   ScriptApp.newTrigger('bilanMensuel').timeBased().onMonthDay(1).atHour(8).inTimezone('Europe/Paris').create();
   ScriptApp.newTrigger('sauvegardeHebdo').timeBased().onWeekDay(ScriptApp.WeekDay.SUNDAY).atHour(20).inTimezone('Europe/Paris').create();
   ScriptApp.newTrigger('alertesCours').timeBased().everyDays(1).atHour(18).inTimezone('Europe/Paris').create();
-  Logger.log('Tâches installées : bilan le 1er à 8 h, sauvegarde le dimanche à 20 h, alertes chaque soir à 18 h (jours ouvrés).');
+  ScriptApp.newTrigger('alertesDividendes').timeBased().everyDays(1).atHour(8).inTimezone('Europe/Paris').create();
+  Logger.log('Tâches installées : bilan le 1er à 8 h, sauvegarde le dimanche à 20 h, alertes de cours chaque soir à 18 h (jours ouvrés), dividendes chaque matin vers 8 h.');
+  try { alertesDividendes(); } catch (e) { Logger.log('Dividendes : ' + e.message); }
 }
 
 /* ---------- lecture des données ---------- */
@@ -110,4 +113,112 @@ function alertesCours() {
     out.push(x.name + ' : ' + (q.chg > 0 ? '+' : '') + q.chg.toFixed(1).replace('.', ',') + ' % aujourd’hui (ligne ≈ ' + eur(x.qty * q.price) + ')'); });
   props.setProperty('sent', JSON.stringify(sent)); props.setProperty('last', JSON.stringify(last2));
   if (out.length) MailApp.sendEmail(moi_(), 'Vigie — alertes de cours', out.join('\n'));
+}
+
+/* ---------- 4. dividendes : détachements et versements ----------
+   Vigie dépose dans ton Drive « vigie-agenda-dividendes.json » (dates annoncées ou estimées, droit au dividende).
+   Chaque matin : notification le jour d'un détachement ou d'un versement (Telegram et/ou ntfy, selon ce que tu as relié)
+   et mise à jour de l'agenda Google « Vigie — dividendes » (rappel à 9 h le jour même, sur ton ordinateur et ton téléphone).
+   Réglages (Paramètres du projet → Propriétés du script) : TELEGRAM_TOKEN (jeton du bot, à coller toi-même),
+   APP_URL (adresse de Vigie ouverte par le bouton). Les autres valeurs sont remplies par les fonctions *Connecter. */
+const AGENDA_NAME = 'vigie-agenda-dividendes.json';
+const CAL_NAME = 'Vigie — dividendes';
+const P_ = () => PropertiesService.getScriptProperties();
+const prop_ = k => P_().getProperty(k) || '';
+const fr2 = (v, d, mn) => { d = d == null ? 2 : d; return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toLocaleString('fr-FR', { minimumFractionDigits: mn == null ? Math.min(d, 2) : mn, maximumFractionDigits: d }); };
+const SYM = { EUR: '€', USD: '$', GBP: '£', CHF: 'CHF', CAD: '$ CA' };
+const cur_ = (v, c, d) => fr2(v, d) + ' ' + (SYM[c] || c);
+const jour_ = d => Utilities.formatDate(Utilities.parseDate(d + ' 12:00', 'Europe/Paris', 'yyyy-MM-dd HH:mm'), 'Europe/Paris', 'dd/MM/yyyy');
+
+function agenda_() {
+  const it = DriveApp.getFilesByName(AGENDA_NAME); let best = null;
+  while (it.hasNext()) { const f = it.next(); if (!f.isTrashed() && (!best || f.getLastUpdated() > best.getLastUpdated())) best = f; }
+  if (!best) throw new Error('Fichier ' + AGENDA_NAME + ' introuvable : ouvre Vigie une fois (Investissements → Dividendes) pour qu’il soit créé dans ton Drive.');
+  return JSON.parse(best.getBlob().getDataAsString('UTF-8'));
+}
+function texte_(e) {
+  const ex = e.k === 'ex';
+  const amt = cur_(e.per, e.cur, e.per < 1 ? 4 : 2) + ' × ' + fr2(e.q, e.q % 1 ? 4 : 0, 0) + ' = ' + cur_(e.tot, e.cur) + (e.cur !== 'EUR' ? ' (≈ ' + cur_(e.eur, 'EUR') + ')' : '');
+  return {
+    titre: ex ? 'Détachement aujourd’hui' : 'Versement aujourd’hui',
+    emoji: ex ? '📅' : '💶',
+    nom: e.name + (e.tk ? ' (' + e.tk + ')' : ''),
+    montant: amt + ' brut',
+    suite: ex ? (e.pay ? 'Versement prévu le ' + jour_(e.pay) + '.' : '') : (e.ex ? 'Détaché le ' + jour_(e.ex) + '.' : ''),
+    compte: e.acc || '',
+    estime: e.est ? 'Date estimée d’après le rythme habituel (pas encore annoncée).' : ''
+  };
+}
+function esc_(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+/* Telegram : bot « Vigie » créé avec @BotFather ; jeton dans la propriété TELEGRAM_TOKEN */
+function telegram_(e) {
+  const tok = prop_('TELEGRAM_TOKEN'), chat = prop_('TELEGRAM_CHAT'); if (!tok || !chat) return false;
+  const x = texte_(e);
+  const html = x.emoji + ' <b>' + x.titre + '</b>\n\n<b>' + esc_(x.nom) + '</b>\n' + esc_(x.montant) + (x.suite ? '\n' + esc_(x.suite) : '') + (x.compte ? '\n<i>' + esc_(x.compte) + '</i>' : '') + (x.estime ? '\n\n<i>' + esc_(x.estime) + '</i>' : '');
+  const body = { chat_id: chat, text: html, parse_mode: 'HTML', disable_web_page_preview: true };
+  const url = prop_('APP_URL'); if (url) body.reply_markup = { inline_keyboard: [[{ text: 'Ouvrir Vigie', url: url }]] };
+  const r = UrlFetchApp.fetch('https://api.telegram.org/bot' + tok + '/sendMessage', { method: 'post', contentType: 'application/json', payload: JSON.stringify(body), muteHttpExceptions: true });
+  if (r.getResponseCode() !== 200) Logger.log('Telegram : ' + r.getContentText()); return r.getResponseCode() === 200;
+}
+/* à lancer une fois après avoir écrit /start à ton bot : retrouve la conversation et envoie un message d'essai */
+function telegramConnecter() {
+  const tok = prop_('TELEGRAM_TOKEN'); if (!tok) throw new Error('Ajoute d’abord la propriété TELEGRAM_TOKEN (Paramètres du projet → Propriétés du script).');
+  const r = JSON.parse(UrlFetchApp.fetch('https://api.telegram.org/bot' + tok + '/getUpdates').getContentText());
+  const m = (r.result || []).map(u => u.message || u.my_chat_member || {}).filter(m => m.chat && m.chat.type === 'private').pop();
+  if (!m) throw new Error('Aucun message reçu : ouvre ton bot dans Telegram, appuie sur « Démarrer » (ou écris /start), puis relance.');
+  P_().setProperty('TELEGRAM_CHAT', String(m.chat.id));
+  telegram_({ k: 'ex', name: 'Message d’essai', tk: '', per: 0.24, cur: 'USD', q: 2, tot: 0.48, eur: 0.41, est: false, pay: Utilities.formatDate(new Date(), 'Europe/Paris', 'yyyy-MM-dd'), acc: 'Vigie est relié à Telegram ✅' });
+  Logger.log('Telegram relié (conversation ' + m.chat.id + ').');
+}
+
+/* ntfy : application gratuite (iPhone, ordinateur) ; un sujet secret est créé ici, abonne-toi à ce sujet dans l'app */
+function ntfy_(e) {
+  const topic = prop_('NTFY_TOPIC'); if (!topic) return false;
+  const x = texte_(e); const url = prop_('APP_URL');
+  const msg = { topic: topic, title: 'Vigie · ' + x.titre, message: '**' + x.nom + '**\n' + x.montant + (x.suite ? '\n' + x.suite : '') + (x.compte ? '\n_' + x.compte + '_' : '') + (x.estime ? '\n\n_' + x.estime + '_' : ''), markdown: true,
+    tags: [e.k === 'ex' ? 'date' : 'euro'], priority: 4 };
+  if (url) { msg.click = url; msg.actions = [{ action: 'view', label: 'Ouvrir Vigie', url: url }]; }
+  msg.icon = prop_('ICON_URL') || 'https://vigie-2lx.pages.dev/icon-192.png';
+  const r = UrlFetchApp.fetch('https://ntfy.sh', { method: 'post', contentType: 'application/json', payload: JSON.stringify(msg), muteHttpExceptions: true });
+  if (r.getResponseCode() !== 200) Logger.log('ntfy : ' + r.getContentText()); return r.getResponseCode() === 200;
+}
+function ntfyConnecter() {
+  let topic = prop_('NTFY_TOPIC');
+  if (!topic) { topic = 'vigie-' + Utilities.getUuid().replace(/-/g, '').slice(0, 16); P_().setProperty('NTFY_TOPIC', topic); }
+  ntfy_({ k: 'pay', name: 'Message d’essai', tk: '', per: 0.24, cur: 'USD', q: 2, tot: 0.48, eur: 0.41, est: false, ex: Utilities.formatDate(new Date(), 'Europe/Paris', 'yyyy-MM-dd'), acc: 'Vigie est relié à ntfy ✅' });
+  Logger.log('Sujet ntfy à ajouter dans l’application (bouton +) : ' + topic);
+}
+
+/* agenda Google « Vigie — dividendes » : un événement à 9 h par date (rappel à l'heure), mis à jour chaque matin */
+function agendaDividendes_(A) {
+  let cal = CalendarApp.getCalendarsByName(CAL_NAME)[0];
+  if (!cal) { cal = CalendarApp.createCalendar(CAL_NAME, { color: CalendarApp.Color.GREEN, timeZone: 'Europe/Paris', summary: 'Détachements et versements de dividendes, tenus à jour par Vigie.' }); }
+  const today = Utilities.formatDate(new Date(), 'Europe/Paris', 'yyyy-MM-dd');
+  const want = {}; (A.events || []).filter(e => e.elig && e.d >= today).forEach(e => want[e.id] = e);
+  const from = Utilities.parseDate(today + ' 00:00', 'Europe/Paris', 'yyyy-MM-dd HH:mm'), to = new Date(from.getTime() + 200 * 864e5);
+  const have = {}; cal.getEvents(from, to).forEach(ev => { const k = ev.getTag('vigie'); if (!k) return; if (!want[k] || have[k]) ev.deleteEvent(); else have[k] = ev; });
+  let n = 0;
+  Object.keys(want).forEach(k => {
+    const e = want[k], x = texte_(e);
+    const title = x.emoji + ' ' + (e.k === 'ex' ? 'Détachement' : 'Versement') + ' · ' + x.nom + (e.k === 'pay' ? ' · ≈ ' + cur_(e.eur, 'EUR') : '') + (e.est ? ' (estimé)' : '');
+    const desc = x.montant + '\n' + x.suite + (x.compte ? '\n' + x.compte : '') + (x.estime ? '\n' + x.estime : '') + '\n\nPour toucher un dividende, il faut détenir le titre la veille du détachement.' + (prop_('APP_URL') ? '\n' + prop_('APP_URL') : '');
+    const ev = have[k];
+    if (ev) { if (ev.getTitle() !== title) ev.setTitle(title); if (ev.getDescription() !== desc) ev.setDescription(desc); return; }
+    const st = Utilities.parseDate(e.d + ' 09:00', 'Europe/Paris', 'yyyy-MM-dd HH:mm');
+    const nev = cal.createEvent(title, st, new Date(st.getTime() + 15 * 60000), { description: desc });
+    nev.setTag('vigie', k); nev.removeAllReminders(); nev.addPopupReminder(0); nev.setColor(e.k === 'ex' ? CalendarApp.EventColor.YELLOW : CalendarApp.EventColor.GREEN); n++;
+  });
+  return n;
+}
+
+function alertesDividendes() {
+  const A = agenda_();
+  const today = Utilities.formatDate(new Date(), 'Europe/Paris', 'yyyy-MM-dd');
+  let n = 0; try { n = agendaDividendes_(A); } catch (e) { Logger.log('Agenda : ' + e.message); }
+  const props = PropertiesService.getUserProperties(); const sent = JSON.parse(props.getProperty('divSent') || '{}');
+  Object.keys(sent).forEach(k => { if (sent[k] < Utilities.formatDate(new Date(Date.now() - 60 * 864e5), 'Europe/Paris', 'yyyy-MM-dd')) delete sent[k]; });
+  (A.events || []).filter(e => e.d === today && e.elig && !sent[e.id]).forEach(e => { const ok1 = telegram_(e), ok2 = ntfy_(e); if (ok1 || ok2 || (!prop_('TELEGRAM_CHAT') && !prop_('NTFY_TOPIC'))) sent[e.id] = today; });
+  props.setProperty('divSent', JSON.stringify(sent));
+  Logger.log('Agenda : ' + n + ' événement(s) ajouté(s). Événements du jour : ' + (A.events || []).filter(e => e.d === today && e.elig).length + '.');
 }

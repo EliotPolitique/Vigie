@@ -131,7 +131,8 @@ function gsyPosApply(src,a,P,rep){
   P.pos.forEach(p=>{
     const isin=gsyIsin(a,p.n,p.g,ops);const sym=p.g?p.g.split(':').pop():'';
     let h=pfMatch(a,{isin:isin||null,name:p.n,sym:sym||null})||(p.g&&(a.holdings||[]).find(x=>String(x.gsym||'').toUpperCase()===String(p.g).toUpperCase()))||null;
-    if(!h){const kind=/etf|tracker|fonds|fund/i.test(p.type)?'etf':/action|stock|share/i.test(p.type)?'stock':pfKind({name:p.n,isin,sym},{type:a.type});
+    if(!h){const nk=pfKind({name:p.n,isin,sym},{type:a.type});/* le nom fait foi pour un ETF ou un fonds (« … UCITS ETF », « … (Dist) ») même si la feuille dit « Action » */
+      const kind=['etf','fund','scpi'].includes(nk)?nk:/etf|tracker|fonds|fund/i.test(p.type)?'etf':/action|stock|share/i.test(p.type)?'stock':nk;
       h={id:uid(),name:p.n,isin:isin||'',ticker:sym,gsym:p.g||'',kind,cur:acur,qty:0,price:isFinite(p.px)&&p.px>0?p.px:0,pru:0,ter:0,div:0,region:pfRegion({name:p.n,isin,sym},kind),sector:kind==='stock'?'other':'diversified',months:[],src:'gsheet'};a.holdings.push(h);rep.created.push(a.name+' · '+p.n)}
     seen.add(h.id);if(!h.isin&&isin)h.isin=isin;if(!h.gsym&&p.g)h.gsym=p.g;
     const hc=h.cur||acur;const lp=L.open.find(x=>(isin&&x.isin===isin)||(h.isin&&x.isin===h.isin));

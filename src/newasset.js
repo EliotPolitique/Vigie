@@ -43,10 +43,25 @@ async function gsEnsure(){const mcp=S.cap.mcp,id=GS2.id||'';if(!mcp||!id||!S.dat
   GSA.busy=false}
 
 /* positions qui attendent leur fiche (dividendes) ou leur logo */
-function naPending(){const out=[];invAccs().filter(a=>!isClosed(a)).forEach(a=>(a.holdings||[]).forEach(h=>{if(!(+h.qty>0)||['crypto','fe','metal'].includes(h.kind)||!h.isin)return;
+function naPending(){const out=[];invAccs().filter(a=>!isClosed(a)&&a.include!==false).forEach(a=>(a.holdings||[]).forEach(h=>{if(!(+h.qty>0)||['crypto','fe','metal'].includes(h.kind))return;
   const c=catOf(h);const lg=holdLogo(h);if(!c||!lg)out.push({h,a,cat:!c,logo:!lg})}));return out}
 {const _dc=dcCardHTML;dcCardHTML=function(fa){const html=_dc(fa);try{const P=naPending().filter(x=>x.cat&&(!fa||fa==='all'||x.a.id===fa));if(!P.length||!ACAT.map.size)return html;
   const note=`<p class="note" style="margin:-4px 0 12px">${ico('info')} ${esc(t('na.pend',{n:P.length,l:P.map(x=>x.h.name).join(', ')}))}</p>`;
   return html.replace('<div class="kpis"',note+'<div class="kpis"')}catch(e){return html}}}
 /* monogramme : un symbole de place commençant par un chiffre (2AR à Francfort) n'est pas parlant → initiales du nom */
 {const _ha=holdAvatar;holdAvatar=function(h,cls){if(h&&h.ticker&&/^\d/.test(h.ticker))h=Object.assign({},h,{ticker:''});return _ha(h,cls)}}
+
+/* V5.5.1 — une position arrivée sans ISIN (feuille de positions) ne passe plus entre les mailles :
+   – logo : à défaut de logo propre, celui de la fiche du catalogue (ISIN ou société de gestion d'après son nom complet) ;
+   – ISIN : repris de la fiche du catalogue dont le ticker correspond au symbole de cotation ;
+   – type : une ligne créée « Action » dont le nom est celui d'un ETF (« … UCITS ETF », « … (Dist) ») redevient un ETF. */
+{const _hl=holdLogo;holdLogo=function(h){const L=_hl(h);if(L||!h||h.kind==='crypto'||h.kind==='fe')return L;let c=null;try{c=catOf(h)}catch(e){}
+  return c?_hl(Object.assign({},h,{isin:c.isin||h.isin,name:c.name||h.name})):L}}
+const ISIN_RE=/^[A-Z]{2}[A-Z0-9]{9}\d$/;
+function naRepair(){if(!S.data||S.demo)return;let ch=0;
+  D().accounts.forEach(a=>(a.holdings||[]).forEach(h=>{if(!(+h.qty>0)||['crypto','fe','metal'].includes(h.kind))return;
+    if(h.kind==='stock'&&h.src==='gsheet'&&pfKind({name:h.name,isin:h.isin,sym:h.ticker},{type:a.type})==='etf'){h.kind='etf';if(h.sector==='other')h.sector='diversified';ch++}
+    if(!h.isin&&ACAT.map.size){const c=catOf(h);const sym=String(h.gsym||h.ticker||'').split(':').pop().toUpperCase();const ci=String(c&&c.isin||'').toUpperCase();
+      if(c&&ISIN_RE.test(ci)&&sym&&String(c.ticker||'').toUpperCase()===sym&&!D().accounts.some(x=>(x.holdings||[]).some(y=>y!==h&&String(y.isin||'').toUpperCase()===ci&&x.id===a.id))){h.isin=ci;ch++}}}));
+  if(ch){save();render()}}
+EXT.boot.push(d=>{[6000,20000,60000].forEach(ms=>setTimeout(()=>{if(S.data===d)try{naRepair()}catch(e){}},ms))});

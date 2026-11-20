@@ -32,6 +32,19 @@ function installerDividendes() {
   Logger.log('Alertes de dividendes installées : chaque matin vers 8 h.');
 }
 
+/* VERSION CLAUDE DE VIGIE : la seule fonction à lancer. Relie ntfy (crée ton sujet secret), installe les notifications
+   de dividendes (8 h) et du point marché (toutes les 5 minutes), envoie un message d'essai et affiche le sujet à ajouter
+   dans l'application ntfy. Les bilans et alertes de cours restent faits par les tâches planifiées de Claude. */
+function installerNotifications() {
+  const keep = ['alertesDividendes', 'pointMarche'];
+  ScriptApp.getProjectTriggers().filter(t => keep.indexOf(t.getHandlerFunction()) >= 0).forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('alertesDividendes').timeBased().everyDays(1).atHour(8).inTimezone('Europe/Paris').create();
+  ScriptApp.newTrigger('pointMarche').timeBased().everyMinutes(5).create();
+  ntfyConnecter();
+  try { pointMarche(); } catch (e) { Logger.log('Point marché : ' + e.message); }
+  Logger.log('C’est installé. Dernière étape : dans l’application ntfy (iPhone ou Android), bouton + → sujet : ' + prop_('NTFY_TOPIC'));
+}
+
 /* ---------- lecture des données ---------- */
 function syncFile_() {
   const it = DriveApp.getFilesByName(SYNC_NAME);

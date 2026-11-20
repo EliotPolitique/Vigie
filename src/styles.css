@@ -992,5 +992,5 @@ input,select,textarea{border-radius:7px}
 .brsrc{margin:0;padding-left:22px;font-size:13px;line-height:1.5}.brsrc li{margin:4px 0;overflow-wrap:anywhere}
 .brwt{font:600 17px/1.35 var(--display);margin:2px 0 6px}.brwl{margin:0 0 6px;color:var(--fg2);line-height:1.55}
 .brl{min-width:0}.brl>summary .m{min-width:0;flex:1}.brpm{display:none}
-.brkp{grid-template-columns:repeat(3,minmax(0,1fr))}
+.brkp{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
 @media (max-width:760px){.brpd{display:none}.brpm{display:inline-flex}.brkp{grid-template-columns:repeat(2,minmax(0,1fr))}.brkp>.kpi:nth-child(3){grid-column:1/-1}}

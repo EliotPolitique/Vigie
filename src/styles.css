@@ -975,3 +975,22 @@ input,select,textarea{border-radius:7px}
 .pgr.done .pgd{background:var(--c);color:#fff}.pgr.done .r{color:var(--good)}
 .pgr.cur{background:color-mix(in srgb,var(--accent) 8%,transparent);border-radius:10px;margin:2px -8px;padding:9px 8px}.pgr.cur .r{color:var(--accent)}.pgr.cur .pgd{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 20%,transparent)}
 .pgr.next{opacity:.7}.pgr.top .m b{color:var(--warn)}
+/* V5.6 — point marché */
+.brgrid>div{display:flex;flex-direction:column;gap:16px;min-width:0}
+.brlead{font-size:15px;line-height:1.6;margin:0}
+.brs{display:inline-flex;gap:3px;margin-left:4px;vertical-align:super;font-size:10.5px}
+.brs a,.brs span{display:inline-block;min-width:16px;padding:0 4px;border-radius:6px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);text-decoration:none;text-align:center;line-height:16px}
+.brlist .brl{border-bottom:1px solid var(--line)}.brlist .brl:last-child{border-bottom:0}
+.brl>summary{list-style:none;cursor:pointer}.brl>summary::-webkit-details-marker{display:none}
+.brl .r{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.brb{padding:2px 14px 14px 58px}.brb p{margin:6px 0;line-height:1.55}
+@media (max-width:760px){.brb{padding-left:14px}}
+.brt{padding:10px 0;border-bottom:1px solid var(--line)}.brt:last-child{border-bottom:0}
+.brt h3{font:600 15px/1.35 var(--display);margin:0 0 4px}.brt p{margin:4px 0;line-height:1.55}
+.brimp{color:var(--accent);font-size:13px}.brimp svg{width:14px;height:14px;vertical-align:-2px}
+.brlearn{background:color-mix(in srgb,var(--accent) 5%,var(--surface))}.brlearn p{line-height:1.6;margin:0}
+.brsrc{margin:0;padding-left:22px;font-size:13px;line-height:1.5}.brsrc li{margin:4px 0;overflow-wrap:anywhere}
+.brwt{font:600 17px/1.35 var(--display);margin:2px 0 6px}.brwl{margin:0 0 6px;color:var(--fg2);line-height:1.55}
+.brl{min-width:0}.brl>summary .m{min-width:0;flex:1}.brpm{display:none}
+.brkp{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:760px){.brpd{display:none}.brpm{display:inline-flex}.brkp{grid-template-columns:repeat(2,minmax(0,1fr))}.brkp>.kpi:nth-child(3){grid-column:1/-1}}

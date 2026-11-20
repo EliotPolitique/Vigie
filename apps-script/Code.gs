@@ -5,6 +5,7 @@
  *  - chaque dimanche : garde une copie datée de tes données (8 dernières) dans « Vigie — sauvegardes » ;
  *  - les jours ouvrés vers 18 h : vérifie tes alertes de cours et les mouvements de ±5 % (cours lus dans ta feuille de cours) ;
  *  - chaque matin vers 8 h : détachements et versements de dividendes du jour → Telegram, ntfy et agenda Google « Vigie — dividendes ».
+ *  - toutes les 5 minutes : si un nouveau « point marché » (matin 9 h 20, soir 22 h 15) est prêt, notification Vigie → ntfy et Telegram.
  * Installation : coller ce fichier dans un projet Apps Script, exécuter une fois installer(), accepter les autorisations.
  * Rien n'est modifié dans Vigie : ce script ne fait que lire tes données et t'écrire.
  */
@@ -18,6 +19,7 @@ function installer() {
   ScriptApp.newTrigger('sauvegardeHebdo').timeBased().onWeekDay(ScriptApp.WeekDay.SUNDAY).atHour(20).inTimezone('Europe/Paris').create();
   ScriptApp.newTrigger('alertesCours').timeBased().everyDays(1).atHour(18).inTimezone('Europe/Paris').create();
   ScriptApp.newTrigger('alertesDividendes').timeBased().everyDays(1).atHour(8).inTimezone('Europe/Paris').create();
+  ScriptApp.newTrigger('pointMarche').timeBased().everyMinutes(5).create();
   Logger.log('Tâches installées : bilan le 1er à 8 h, sauvegarde le dimanche à 20 h, alertes de cours chaque soir à 18 h (jours ouvrés), dividendes chaque matin vers 8 h.');
   try { alertesDividendes(); } catch (e) { Logger.log('Dividendes : ' + e.message); }
 }
@@ -229,4 +231,52 @@ function alertesDividendes() {
   (A.events || []).filter(e => e.d === today && e.elig && !sent[e.id]).forEach(e => { const ok1 = telegram_(e), ok2 = ntfy_(e); if (ok1 || ok2 || (!prop_('TELEGRAM_CHAT') && !prop_('NTFY_TOPIC'))) sent[e.id] = today; });
   props.setProperty('divSent', JSON.stringify(sent));
   Logger.log('Agenda : ' + n + ' événement(s) ajouté(s). Événements du jour : ' + (A.events || []).filter(e => e.d === today && e.elig).length + '.');
+}
+
+/* ---------- point marché : notification Vigie dès qu'un nouveau point est prêt ----------
+   La tâche « Vigie · point marché » (9 h 20 et 22 h 15) dépose dans ton Drive le fichier « vigie-point-marche.json »
+   {id, at, slot, title, body, p} ; ce script le relit toutes les 5 minutes et envoie la notification une seule fois. */
+const BRIEF_NAME = 'vigie-point-marche.json';
+function installerPointMarche() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'pointMarche').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('pointMarche').timeBased().everyMinutes(5).create();
+  if (!prop_('NTFY_TOPIC') && !prop_('TELEGRAM_CHAT')) Logger.log('Attention : ni ntfy ni Telegram ne sont reliés. Lance d’abord ntfyConnecter().');
+  Logger.log('Notifications du point marché installées (vérification toutes les 5 minutes).');
+  pointMarche();
+}
+function pointMarche() {
+  const it = DriveApp.getFilesByName(BRIEF_NAME); let best = null;
+  while (it.hasNext()) { const f = it.next(); if (!f.isTrashed() && (!best || f.getLastUpdated() > best.getLastUpdated())) best = f; }
+  if (!best) return;
+  let j; try { j = JSON.parse(best.getBlob().getDataAsString('UTF-8')); } catch (e) { Logger.log('Point marché illisible : ' + e.message); return; }
+  if (!j || !/^b-\d{8}-(am|pm)$/.test(j.id || '')) return;
+  const props = PropertiesService.getUserProperties();
+  if (props.getProperty('briefSent') === j.id) return;
+  /* un point de plus de 3 heures n'est plus envoyé (ordinateur Google en retard, reprise après une panne) */
+  if (j.at && Date.now() - Date.parse(j.at) > 3 * 3600e3) { props.setProperty('briefSent', j.id); return; }
+  const ok1 = ntfyBrief_(j), ok2 = telegramBrief_(j);
+  if (ok1 || ok2) props.setProperty('briefSent', j.id);
+  Logger.log('Point marché ' + j.id + ' : ntfy ' + ok1 + ', Telegram ' + ok2);
+}
+function briefTitle_(j) {
+  const p = +j.p; const v = isFinite(p) ? ' · ' + (p > 0 ? '+' : p < 0 ? '−' : '') + fr2(Math.abs(p) * 100, 2) + ' %' : '';
+  return 'Vigie · ' + (j.slot === 'am' ? 'Point du matin' : 'Point du soir') + v;
+}
+function ntfyBrief_(j) {
+  const topic = prop_('NTFY_TOPIC'); if (!topic) return false;
+  const url = prop_('APP_URL'); const p = +j.p;
+  const msg = { topic: topic, title: briefTitle_(j), message: '**' + String(j.title || '') + '**\n' + String(j.body || '') + '\n\n_Note complète dans Vigie → Point marché._', markdown: true,
+    tags: [isFinite(p) && p < 0 ? 'chart_with_downwards_trend' : 'chart_with_upwards_trend'], priority: 3 };
+  if (url) { msg.click = url; msg.actions = [{ action: 'view', label: 'Lire dans Vigie', url: url }]; }
+  msg.icon = prop_('ICON_URL') || 'https://vigie-2lx.pages.dev/icon-192.png';
+  const r = UrlFetchApp.fetch('https://ntfy.sh', { method: 'post', contentType: 'application/json', payload: JSON.stringify(msg), muteHttpExceptions: true });
+  if (r.getResponseCode() !== 200) Logger.log('ntfy : ' + r.getContentText()); return r.getResponseCode() === 200;
+}
+function telegramBrief_(j) {
+  const tok = prop_('TELEGRAM_TOKEN'), chat = prop_('TELEGRAM_CHAT'); if (!tok || !chat) return false;
+  const html = (j.slot === 'am' ? '🌅' : '🌙') + ' <b>' + esc_(briefTitle_(j)) + '</b>\n\n<b>' + esc_(j.title || '') + '</b>\n' + esc_(j.body || '') + '\n\n<i>Note complète dans Vigie → Point marché.</i>';
+  const body = { chat_id: chat, text: html, parse_mode: 'HTML', disable_web_page_preview: true };
+  const url = prop_('APP_URL'); if (url) body.reply_markup = { inline_keyboard: [[{ text: 'Lire dans Vigie', url: url }]] };
+  const r = UrlFetchApp.fetch('https://api.telegram.org/bot' + tok + '/sendMessage', { method: 'post', contentType: 'application/json', payload: JSON.stringify(body), muteHttpExceptions: true });
+  if (r.getResponseCode() !== 200) Logger.log('Telegram : ' + r.getContentText()); return r.getResponseCode() === 200;
 }
